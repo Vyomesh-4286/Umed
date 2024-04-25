@@ -1,0 +1,224 @@
+{%- liquid
+	assign section_id = '#shopify-section-' | append: section.id
+	assign full       = section.settings.full
+	
+-%}
+
+<div class="{% if full %}stretch-section-padding{% else %}container{% endif %}">
+	<div class="map-wrapper">
+		<div class="map" id="map-{{ section.id }}" data-lat="{{ section.settings.lat_address }}" data-lng="{{ section.settings.lng_address }}"></div>
+		{% if full %}
+			<div class="address-content">
+		{% else %}
+			<div class="col-xl-10 col-lg-12 m-auto">
+		{% endif %}
+				<div class="address grid-layout grid-{{ section.settings.col_destop }} grid-tablet-2 grid-mobile-1" role="list">
+					{%- for block in section.blocks -%}
+						{%- liquid
+							capture marker_lat
+							if block.settings.marker_address_lat != blank
+								echo block.settings.marker_address_lat
+							endif
+							endcapture
+						
+							capture marker_lng
+								if block.settings.marker_address_lng != blank
+									echo block.settings.marker_address_lng
+								endif
+							endcapture
+						-%}
+						<div class="item-address" {{ block.shopify_attributes }} id="map-marker" data-lat="{{ marker_lat }}" data-lng="{{ marker_lng }}">
+							{%- case block.type -%}
+								{%- when '@app' -%}
+									{%- render block -%}
+
+								{%- when 'item-address' -%}
+									{% if block.settings.title_address != blank or block.settings.subtext != blank or block.settings.btn_name != blank %}
+										<div class="info-address">
+											{% if block.settings.title_address != blank %}
+												<h4 class="title-address">{{ block.settings.title_address }}</h4>
+											{% endif %}
+											{% if block.settings.content_html != blank %}
+												{{ block.settings.content_html }}
+											{% endif %}
+											{% if block.settings.btn_name != blank %}                                   
+												<a href="{{ block.settings.url_btn }}" class="button-name">
+													{% render 'icon', code: 'location' %}   
+													{{ block.settings.btn_name }}
+												</a>                                       
+											{% endif %}
+										</div>
+									{% endif %}
+							{%- endcase -%}
+						</div>
+					{%- endfor -%}
+				</div>
+			</div>
+	</div>
+</div>
+
+<style>
+	{{ section_id }} {
+		padding-top: {{ section.settings.padding_top_mobile }}px;
+		padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+	}
+
+
+	@media (min-width: 768px) {
+		{{ section_id }} {
+			padding-top: {{ section.settings.padding_top }}px;
+			padding-bottom: {{ section.settings.padding_bottom }}px;
+		}
+	}
+</style>
+	
+{% schema %}
+{
+	"name": "t:sections.map.name",
+	"tag": "section",
+	"class": "map-section",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "full",
+			"default": false,
+			"label": "t:general.layout.full.label"
+		},
+		{
+			"type": "text",
+			"id": "lat_address",
+			"default": "47.040182144806664",
+			"label": "t:sections.map.settings.lat_address.label",
+			"info": "t:sections.map.settings.lat_address.info"
+		},
+		{
+			"type": "text",
+			"id": "lng_address",
+			"default": "9.667968750000002",
+			"label": "t:sections.map.settings.lng_address.label",
+			"info": "t:sections.map.settings.lng_address.info"
+		},
+		{
+			"type": "range",
+			"id": "col_destop",
+			"min": 1,
+			"max": 5,
+			"step": 1,
+			"default": 3,
+			"label": "t:sections.map.settings.col_destop.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "item-address",
+			"name": "t:sections.map.blocks.item-address.name",
+			"settings": [
+				{
+					"type": "text",
+					"id": "title_address",
+					"default": "Address",
+					"label": "t:sections.map.blocks.item-address.settings.text.label"
+				},
+				{
+					"type":"html",
+					"id":"content_html",
+					"default":"<p>205 North Michigan Avenue, Suite 810<br>Chicago, 60601, USA</p>",
+					"label":"t:sections.map.blocks.item-address.settings.content_html.label"
+				},
+				{
+					"type": "text",
+					"id": "btn_name",
+					"default": "View map",
+					"label": "t:sections.map.blocks.item-address.settings.btn_name.label"
+				},
+				{
+					"type": "url",
+					"id": "url_btn",
+					"label": "t:sections.map.blocks.item-address.settings.url_btn.label"
+				},
+				{
+					"type": "text",
+					"id": "marker_address_lat",
+					"default": "51.5",
+					"label": "t:sections.map.blocks.item-address.settings.marker_address_lat.label",
+					"info": "t:sections.map.blocks.item-address.settings.marker_address_lat.info"
+				},
+				{
+					"type": "text",
+					"id": "marker_address_lng",
+					"default": "-0.09",
+					"label": "t:sections.map.blocks.item-address.settings.marker_address_lng.label",
+					"info": "t:sections.map.blocks.item-address.settings.marker_address_lng.info"
+				}
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.map.presets.name",
+			"blocks": [
+				{
+					"type": "item-address"
+				},
+				{
+					"type": "item-address"
+				},
+				{
+					"type": "item-address"
+				}
+			]
+		}
+	]
+}
+{% endschema %}

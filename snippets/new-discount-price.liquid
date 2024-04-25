@@ -1,0 +1,234 @@
+{% comment %}
+  Renders a list of product's price (regular, sale)
+
+  Accepts:
+  - product: {Object} Product Liquid object (optional)
+  - use_variant: {Boolean} Renders selected or first variant price instead of overall product pricing (optional)
+  - price_class: {String} Adds a price class to the price element (optional)
+
+  Usage:
+  {% render 'price', product: product %}
+{% endcomment %}
+{%- liquid
+  if use_variant
+    assign target = product.selected_or_first_available_variant
+  else
+    assign target = product
+  endif
+
+  assign price = target.price | default: 1095
+  assign original_price = target.compare_at_price
+
+  assign sale_number = ''
+  assign sale_discount_50 = ''
+  assign sale_discount_100 = ''
+  if product.available
+    if product.type == 'variable'
+      assign variant_badge = product.selected_or_first_available_variant
+
+      if variant_badge.compare_at_price > variant_badge.price
+        assign sale_number = variant_badge.compare_at_price | minus: variant_badge.price | times: 100.0 | divided_by: variant_badge.compare_at_price | round | append: '%'
+        assign sale_discount_50 = variant_badge.compare_at_price | minus: variant_badge.price | times: section.settings.discount_off_first | divided_by: variant_badge.compare_at_price | round | append: '%'
+        assign sale_discount_100 = variant_badge.compare_at_price | minus: variant_badge.price | times: section.settings.discount_off_second | divided_by: variant_badge.compare_at_price | round | append: '%'
+      endif
+    else
+      if product.compare_at_price_max > product.price
+        assign sale_number = product.compare_at_price_max | minus: product.price | times: 100.0 | divided_by: product.compare_at_price_max | round | append: '%'
+        assign sale_discount_50 = product.compare_at_price_max | minus: product.price | times: section.settings.discount_off_first | divided_by: product.compare_at_price_max | round | append: '%'
+        assign sale_discount_100 = product.compare_at_price_max | minus: product.price | times: section.settings.discount_off_second | divided_by: product.compare_at_price_max | round | append: '%'
+      endif
+    endif
+  endif
+-%}
+
+{%- capture price_html -%}
+  <div id="js-pricing-switch" class="text-center my-4 py-2 relative">
+    <span class="switch-label js-switch-label-monthly">Discount</span>
+    <label class="switch">
+      <input type="checkbox" checked="checked">
+      <span class="slider"></span>
+    </label>
+    <span class="switch-label js-switch-label-yearly active">
+      <span class="save-money"> {{ sale_discount_100 }}{{ 'products.product.off' | t }}</span>
+    </span>
+  </div>
+
+{%- endcapture -%}
+<div class="product-price{% if price_class %} {{ price_class }}{% endif %}">
+  {%- if use_variant or product.type != 'variable' -%}
+    {{- price_html -}}
+  {%- else -%}
+    <span class="price">
+      {%- render 'get-price', price: target.price_min -%}
+    </span>
+
+    <span class="separator">-</span>
+
+    <span class="price">
+      {%- render 'get-price', price: target.price_max -%}
+    </span>
+  {%- endif -%}
+
+  {%- render 'price-unit', product: product -%}
+</div>
+
+<style>
+    .price-card--price-number:before {
+    content: "$";
+    font-size: 2rem;
+    display: inline-block;
+    position: relative;
+  }
+
+  .price-card--price-number:after {
+    content: "/ mo";
+    font-size: 1.3rem;
+    display: inline-block;
+  }
+
+  .switch-label {
+    text-align: center;
+    opacity: 0.4;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0 1rem;
+  }
+
+  .switch-label .save-money {
+    color: #3498db;
+    font-style: italic;
+    padding-left: 0.5rem;
+  }
+
+  .save-money--mobile {
+    color: #3498db;
+    font-style: italic;
+    display: none;
+  }
+
+  .switch-label.active {
+    opacity: 1;
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 3.75rem;
+    height: 2.15rem;
+    vertical-align: -50%;
+    margin: 0;
+  }
+
+  .switch input {
+    display: none;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: -12px;
+    left: -6px;
+    right: -15px;
+    bottom: 0;
+    background-color: #3498db;
+    border-radius: 34px;
+    -webkit-transition: 0.1s;
+    transition: 0.1s;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    border-radius: 50%;
+    -webkit-transition: 0.1s;
+    transition: 0.1s;
+  }
+
+  #js-pricing-switch input:focus + .slider {
+    box-shadow: 0 0 1px #2196f3;
+  }
+
+  #js-pricing-switch input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+</style>
+
+<script>
+    (function () {
+         const toggleSwitch = document.getElementById("js-pricing-switch").querySelector("input");
+         const monthlyLabel = document.querySelector(".js-switch-label-monthly");
+         const yearlyLabel = document.querySelector(".js-switch-label-yearly");
+
+         toggleSwitch.addEventListener("change", function () {
+           // Change prices for plans
+           togglePriceContent();
+
+           // Toggle monthly/yearly style
+           monthlyLabel.classList.toggle("active");
+           yearlyLabel.classList.toggle("active");
+         });
+
+         function togglePriceContent() {
+           const toggleSwitchChecked = toggleSwitch.checked;
+           const togglePriceContents = document.querySelectorAll(".js-toggle-price-content");
+
+           togglePriceContents.forEach(function (content) {
+             if (toggleSwitchChecked) {
+               // if toggle is yearly
+               content.innerHTML = content.dataset.priceYearly;
+             } else {
+               // if toggle is monthly
+               content.innerHTML = content.dataset.priceMonthly;
+             }
+           });
+         }
+
+         window.odometerOptions = {
+           duration: 400
+         };
+       })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const cartSummeryElements = document.querySelectorAll('.price');
+
+      cartSummeryElements.forEach(cartSummeryEle => {
+          const priceStr = cartSummeryEle.textContent.trim();
+          const priceMatch = priceStr.match(/Regular price\nRs\. (\d+\.\d+)/);
+          console.log("priceMatch", priceMatch);
+
+          if (priceMatch && priceMatch.length > 1) {
+              const totalPrice = parseFloat(priceMatch[1]); // Extract regular price
+              console.log("totalPrice", totalPrice);
+
+              const discountPricings = document.querySelectorAll('.text-center');
+
+              discountPricings.forEach(disEle => {
+                  const discountCodeEle = disEle.querySelector('.save-money');
+                  console.log("discountCodeEle", discountCodeEle);
+                  if (discountCodeEle) {
+                      const disPriceText = discountCodeEle.textContent.trim();
+                      console.log("disPriceText", disPriceText);
+                      const disPricePercentage = parseInt(disPriceText);
+                      console.log("disPricePercentage", disPricePercentage);
+                      const disPrice = totalPrice * (disPricePercentage / 100); // Calculate discounted price
+                      const getRemainAmount = totalPrice - disPrice; // Calculate remaining amount after discount
+                      const remainAmount = getRemainAmount > 0 ? formatCurrency(getRemainAmount) : '0';
+                      console.log("remainAmount", remainAmount);
+                      discountCodeEle.classList.add('disabled');
+                  }
+              });
+          }
+      });
+  });
+
+  function formatCurrency(amount) {
+      return amount.toFixed(2); // Format amount to two decimal places
+  }
+</script>

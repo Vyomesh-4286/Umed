@@ -1,0 +1,301 @@
+{%- liquid
+  assign product_form_id = 'product-compare-form'
+  assign results = search.results
+  assign size = results.size
+  assign place = 4 | minus: size
+-%}
+
+<table class="compare-table">
+  <thead>
+    <th></th>
+
+    {%- for product in results -%}
+      <th>
+                <a href="{{ product.url | split: '?' | first }}">{{- product.title | escape -}}</a>
+<div data-shop-id="{{shop.id}}" product-id="{{product.id }}" data-page="{{request.page_type}}" class="ddreview-star"></div>
+      </th>
+    {%- endfor -%}
+
+    {%- if size < 4 -%}
+      {%- for i in (1..place) -%}
+        <th></th>
+      {%- endfor -%}
+    {%- endif -%}
+  </thead>
+
+  <tbody>
+    <tr class="compare-image preview-image">
+      <td>{{- 'products.table.image' | t -}}</td>
+
+      {%- for product in results -%}
+        <td>
+          <a href="{{ product.url | split: '?' | first }}" data-id="{{ product.id }}">
+            {%- liquid
+              if product.featured_media
+                echo product.featured_media | image_url: width: product.featured_media.width | image_tag: loading: 'lazy', class: 'product-image'
+              else
+                capture index
+                  cycle 1, 2, 3, 4, 5, 6
+                endcapture
+
+                echo 'product-' | append: index | placeholder_svg_tag: 'placeholder-svg'
+              endif
+            -%}
+          </a>
+        </td>
+      {%- endfor -%}
+
+      {%- if size < 4 -%}
+        {%- for i in (1..place) -%}
+          <td>{{- 'image' | placeholder_svg_tag: 'placeholder-svg' -}}</td>
+        {%- endfor -%}
+      {%- endif -%}
+    </tr>
+
+    <tr class="compare-price">
+      <td>{{- 'products.table.price' | t -}}</td>
+
+      {%- for product in results -%}
+        <td data-id="{{ product.id }}">{%- render 'price', product: product -%}</td>
+      {%- endfor -%}
+
+      {%- if size < 4 -%}
+        {%- for i in (1..place) -%}
+          <td class="td-placeholder"></td>
+        {%- endfor -%}
+      {%- endif -%}
+    </tr>
+
+    <tr>
+      <td>{{- 'products.table.rating' | t -}}</td>
+
+      {%- for product in results -%}
+        <td>
+          {%- liquid
+            assign reviews = product.metafields.spr.reviews
+            assign review_count = reviews | split: '"reviewCount": "' | last | split: '"' | first | plus: 0
+            assign review_rating = reviews | split: '"ratingValue": "' | last | split: '"' | first | plus: 0 | round: 2
+          -%}
+
+          <span class="product-rating">
+            <span class="rating-star">{%- render 'icon', code: 'star' -%}</span>
+
+            {%- if review_count > 0 -%}
+              <span class="rating-value">{{ review_rating }}/5</span>
+              <span class="rating-count">({{ 'products.product.reviews' | t: count: review_count }})</span>
+            {%- else -%}
+              <span class="rating-count">{{ 'products.product.no_reviews' | t }}</span>
+            {%- endif -%}
+          </span>
+        </td>
+      {%- endfor -%}
+
+      {%- if size < 4 -%}
+        {%- for i in (1..place) -%}
+          <td class="td-placeholder"></td>
+        {%- endfor -%}
+      {%- endif -%}
+    </tr>
+
+    <tr class="compare-availability">
+      <td>{{- 'products.table.availability' | t -}}</td>
+
+      {%- for product in results -%}
+        <td data-id="{{ product.id }}">
+          {%- if product.available -%}
+            {%- liquid
+              assign should_calculate_inventory = true
+
+              for variant in product.variants
+                if variant.inventory_policy == 'continue' or variant.inventory_management == null
+                  assign should_calculate_inventory = false
+                  break
+                endif
+              endfor
+            -%}
+
+            {%- if should_calculate_inventory and settings.card_low_stock > 0 -%}
+              {%- liquid
+                assign all_inventory = 0
+
+                for variant in product.variants
+                  if variant.inventory_management
+                    assign all_inventory = variant.inventory_quantity | at_least: 0 | plus: all_inventory
+                  endif
+                endfor
+              -%}
+
+              {%- if all_inventory <= settings.card_low_stock -%}
+                <span class="product-stock-status inventory--low">
+                  {{- 'products.product.low_stock_with_quantity_count' | t: count: all_inventory -}}
+                </span>
+              {%- else -%}
+                <span class="product-stock-status inventory--high">
+                  {{- 'products.product.in_stock_with_quantity_count' | t: count: all_inventory -}}
+                </span>
+              {%- endif -%}
+            {%- else -%}
+              {%- if product.variants.first.inventory_policy == 'continue'
+                and product.variants.first.inventory_quantity <= 0
+                and product.variants.first.requires_shipping
+              -%}
+                <span class="product-stock-status inventory--high">{{- 'products.product.oversell_stock' | t -}}</span>
+              {%- else -%}
+                <span class="product-stock-status inventory--high">{{- 'products.product.in_stock' | t -}}</span>
+              {%- endif -%}
+            {%- endif -%}
+          {%- else -%}
+            <span class="product-stock-status out-of-stock">{{- 'products.product.out_of_stock' | t -}}</span>
+          {%- endif -%}
+        </td>
+      {%- endfor -%}
+
+      {%- if size < 4 -%}
+        {%- for i in (1..place) -%}
+          <td class="td-placeholder"></td>
+        {%- endfor -%}
+      {%- endif -%}
+    </tr>
+
+    <tr class="compare-description">
+      <td>{{- 'products.table.description' | t -}}</td>
+
+      {%- for product in results -%}
+        <td>
+          {%- liquid
+            if product.description != blank
+              echo product.description
+            else
+              echo 'general.text.na' | t
+            endif
+          -%}
+        </td>
+      {%- endfor -%}
+
+      {%- if size < 4 -%}
+        {%- for i in (1..place) -%}
+          <td class="td-placeholder"></td>
+        {%- endfor -%}
+      {%- endif -%}
+    </tr>
+
+    <tr>
+      <td>{{- 'products.table.options' | t -}}</td>
+
+      {%- for product in results -%}
+        <td>
+          {%- if product.has_only_default_variant -%}
+            {{- 'general.text.na' | t -}}
+          {%- else -%}
+            <div class="product-variants" data-url="{{ product.url }}" data-id="{{ product.id }}">
+              {%- for option in product.options_with_values -%}
+                {%- liquid
+                  assign selected_value = option.selected_value
+                  assign index = forloop.index0
+                  assign id = 'option-' | append: section.id | append: '-' | append: index
+                -%}
+
+                <div class="variant-field">
+                  <label class="field-title" for="{{ id | append: index }}">
+                    {{- option.name -}}
+                    :
+                  </label>
+
+                  <select
+                    class="field-value"
+                    id="{{ id | append: index }}"
+                    name="{{ option.name | escape }}"
+                    form="{{ product_form_id }}"
+                    data-noui
+                  >
+                    {%- for value in option.values -%}
+                      <option
+                        value="{{ value | escape }}"
+                        {% if selected_value == value %}
+                          selected="selected"
+                        {% endif %}
+                      >
+                        {{- value -}}
+                      </option>
+                    {%- endfor -%}
+                  </select>
+                </div>
+              {%- endfor -%}
+
+              {% comment %} Product variant data {% endcomment %}
+              <script data-product-variants>
+                {{ product.variants | json }}
+              </script>
+
+              {% comment %} Product quantity data {% endcomment %}
+              <script data-inventory-quantity>
+                [{%- liquid
+                	for var in product.variants
+                		echo '{"id":' | append: var.id | append: ',"qty":' | append: var.inventory_quantity | append: '}'
+
+                		unless forloop.last
+                			echo ','
+                		endunless
+                	endfor
+                -%}]
+              </script>
+            </div>
+          {%- endif -%}
+        </td>
+      {%- endfor -%}
+
+      {%- if size < 4 -%}
+        {%- for i in (1..place) -%}
+          <td class="td-placeholder"></td>
+        {%- endfor -%}
+      {%- endif -%}
+    </tr>
+  </tbody>
+
+  <tfoot>
+    <td>{{- 'products.table.actions' | t -}}</td>
+
+    {%- for product in results -%}
+      <td>
+        {%- form 'product',
+          product,
+          class: 'form-add-to-cart',
+          novalidate: 'novalidate',
+          data-type: 'add-to-cart-form',
+          data-id: product.id
+        -%}
+          <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+
+          {%- render 'quantity' -%}
+
+          <button
+            type="submit"
+            name="add"
+            class="button primary-button add-to-cart-button"
+            {% unless product.available %}
+              disabled
+            {% endunless %}
+          >
+            {% if product.available %}
+              {%- render 'icon', code: 'cart-compare' -%}
+              {{- 'products.product.add_to_cart_quickview' | t -}}
+            {% else %}
+              {{- 'products.product.sold_out' | t -}}
+            {% endif %}
+          </button>
+        {%- endform -%}
+
+        <button class="button compare-remove" data-id="{{ product.id }}">
+          <span class="tooltip">{{- 'general.text.remove' | t -}}</span>
+          {%- render 'icon', code: 'remove' -%}
+        </button>
+      </td>
+    {%- endfor -%}
+
+    {%- if size < 4 -%}
+      {%- for i in (1..place) -%}
+        <td class="td-placeholder"></td>
+      {%- endfor -%}
+    {%- endif -%}
+  </tfoot>
+</table>

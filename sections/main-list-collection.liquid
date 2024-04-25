@@ -1,0 +1,159 @@
+{%- liquid
+	assign total = section.settings.rows | times: section.settings.columns
+-%}
+
+{{ 'list-collection.css' | asset_url | stylesheet_tag }}
+
+<div class="container">
+	{%- if section.settings.title != blank -%}
+		<h1 class="title">{{- section.settings.title | escape -}}</h1>
+	{%- endif -%}
+
+	{%- paginate collections by total -%}
+		{%- liquid
+			case section.settings.sort
+				when 'products_high' or 'products_low'
+					assign collections = collections | sort: 'all_products_count'
+				when 'date' or 'date_reversed'
+					assign collections = collections | sort: 'published_at'
+			endcase
+
+			if section.settings.sort == 'products_high' or section.settings.sort == 'date_reversed' or section.settings.sort == 'alphabetical_reversed'
+				assign collections = collections | reverse
+			endif
+		-%}
+
+		<ul class="collection-grid grid grid-{{ section.settings.columns }} grid-tablet-3 grid-mobile-2" role="list">
+			{%- for collection in collections -%}
+				{%- assign count = collection.all_products_count -%}
+
+				<li class="grid-item">
+					<div class="card">
+						<div class="card-media {{ section.settings.image_ratio }}-media">
+							{%- if count > 0 -%}
+								<a href="{{ collection.url }}" class="card-link"><span class="sr-only">{{- collection.title -}}</span></a>
+							{%- endif -%}
+
+							{%- liquid
+								if collection.featured_image != blank
+									echo collection.featured_image | image_url: width: 768 | image_tag: loading: 'lazy'
+								else
+									render 'icon', code: 'placeholder'
+								endif
+							-%}
+						</div>
+
+						<div class="card-meta">
+							<h2 class="card-title">
+								{%- if count > 0 -%}
+									<a href="{{ collection.url }}" class="card-url">
+								{%- endif -%}
+									{{- collection.title -}}
+									{%- render 'icon', code: 'arrow-right' -%}
+								{%- if count > 0 -%}
+									</a>
+								{%- endif -%}
+							</h2>
+
+							{%- if collection.description != blank -%}
+								<p class="card-desc">
+									{{- collection.description | strip_html | truncatewords: 12 -}}
+								</p>
+							{%- endif -%}
+						</div>
+					</div>
+				</li>
+			{%- endfor -%}
+		</ul>
+
+		{%- if paginate.pages > 1 -%}
+			{%- render 'pagination', paginate: paginate, alignment: 'center' -%}
+		{%- endif -%}
+	{%- endpaginate -%}
+</div>
+
+{% schema %}
+{
+	"name": "t:sections.main-list-collection.name",
+	"class": "list-collection-section",
+	"settings": [
+		{
+			"type": "text",
+			"id": "title",
+			"label": "t:sections.main-list-collection.settings.title.label",
+			"default": "Collections"
+		},
+		{
+			"type": "range",
+			"id": "columns",
+			"min": 1,
+			"max": 12,
+			"step": 1,
+			"default": 3,
+			"label": "t:sections.main-list-collection.settings.columns.label"
+		},
+		{
+			"type": "range",
+			"id": "rows",
+			"min": 1,
+			"max": 12,
+			"step": 1,
+			"default": 3,
+			"label": "t:sections.main-list-collection.settings.rows.label"
+		},
+		{
+			"type": "select",
+			"id": "sort",
+			"options": [
+				{
+					"value": "alphabetical",
+					"label": "t:sections.main-list-collection.settings.sort.options__1.label"
+				},
+				{
+					"value": "alphabetical_reversed",
+					"label": "t:sections.main-list-collection.settings.sort.options__2.label"
+				},
+				{
+					"value": "date_reversed",
+					"label": "t:sections.main-list-collection.settings.sort.options__3.label"
+				},
+				{
+					"value": "date",
+					"label": "t:sections.main-list-collection.settings.sort.options__4.label"
+				},
+				{
+					"value": "products_high",
+					"label": "t:sections.main-list-collection.settings.sort.options__5.label"
+				},
+				{
+					"value": "products_low",
+					"label": "t:sections.main-list-collection.settings.sort.options__6.label"
+				}
+			],
+			"default": "products_high",
+			"label": "t:sections.main-list-collection.settings.sort.label"
+		},
+		{
+			"type": "select",
+			"id": "image_ratio",
+			"options": [
+				{
+					"value": "adapt",
+					"label": "t:sections.main-list-collection.settings.image_ratio.options__1.label"
+				},
+				{
+					"value": "portrait",
+					"label": "t:sections.main-list-collection.settings.image_ratio.options__2.label"
+				},
+				{
+					"value": "square",
+					"label": "t:sections.main-list-collection.settings.image_ratio.options__3.label"
+				}
+			],
+			"default": "square",
+			"label": "t:sections.main-list-collection.settings.image_ratio.label",
+			"info": "t:sections.main-list-collection.settings.image_ratio.info"
+		}
+	]
+}
+{% endschema %}

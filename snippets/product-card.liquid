@@ -1,0 +1,360 @@
+{% comment %}
+		Renders a product card
+
+		Accepts:
+		- product: {Object} Product Liquid object (optional)
+
+		Usage:
+		{% render 'product-card' %}
+{% endcomment %}
+
+{%- liquid
+	if product.featured_media and product.media[1] != nil and settings.card_image_hover_effect != 'none'
+		assign image_effect = settings.card_image_hover_effect | prepend: ' hover-'
+	endif
+
+	if settings.card_image_overlay
+		assign image_overlay = ' has-overlay'
+	endif
+
+	if settings.image_animation
+		assign image_animation = ' lazy-image'
+	endif
+
+	assign src_tag = 'src'
+	if settings.image_animation
+		assign src_tag = 'data-src'
+	endif
+-%}
+
+{% comment %} Stock status {% endcomment %}
+{%- capture product_stock -%}
+	{%- if settings.card_show_stock and product.template_suffix != 'pre-order' -%}
+		{%- if product.available -%}
+			{%- liquid
+				assign should_calculate_inventory = true
+
+				for variant in product.variants
+					if variant.inventory_policy == 'continue' or variant.inventory_management == nil
+						assign should_calculate_inventory = false
+						break
+					endif
+				endfor
+			-%}
+
+			{%- if should_calculate_inventory and settings.card_low_stock > 0 -%}
+				{%- liquid
+					assign all_inventory = 0
+
+					for variant in product.variants
+						if variant.inventory_management
+							assign all_inventory = variant.inventory_quantity | at_least: 0 | plus: all_inventory
+						endif
+					endfor
+				-%}
+
+				{%- if all_inventory <= settings.card_low_stock -%}
+					<span class="product-stock-status inventory--low">{{- 'products.product.low_stock_with_quantity_count' | t: count: all_inventory -}}</span>
+				{%- else -%}
+					<span class="product-stock-status inventory--high">{{- 'products.product.in_stock_with_quantity_count' | t: count: all_inventory -}}</span>
+				{%- endif -%}
+			{%- else -%}
+				{%- if product.variants.first.inventory_policy == 'continue' and product.variants.first.inventory_quantity <= 0 and product.variants.first.requires_shipping -%}
+					<span class="product-stock-status inventory--high">{{- 'products.product.oversell_stock' | t -}}</span>
+				{%- else -%}
+					<span class="product-stock-status inventory--high">{{- 'products.product.in_stock' | t -}}</span>
+				{%- endif -%}
+			{%- endif -%}
+		{%- else -%}
+			<span class="product-stock-status">{{- 'products.product.out_of_stock' | t -}}</span>
+		{%- endif -%}
+	{%- endif -%}
+{%- endcapture -%}
+
+{% comment %} Swatches {% endcomment %}
+{%- capture product_swatches -%}
+	{%- if settings.card_show_swatches and product.has_only_default_variant == false and product.options.size > 0 -%}
+		{%- assign swatch = settings.card_swatch_type -%}
+
+		{%- for option in product.options_with_values -%}
+			{%- liquid
+				assign name           = option.name | downcase
+				assign have_color     = false
+				assign variant_option = 'option' | append: forloop.index
+
+				if name == 'color' or name == 'colour'
+					assign have_color = forloop.index0
+				endif
+			-%}
+
+			{%- if have_color != false -%}
+				<div class="product-swatches swatch-{{ swatch }} swatch-{{ settings.card_swatch_style }}" data-url="{{ product.url }}">
+					{%- for value in option.values -%}
+						{%- liquid
+							assign variant    = product.variants[ forloop.index0 ]
+							assign meta_color = variant.metafields.color.value
+
+							capture color
+								if meta_color
+									echo meta_color
+								else
+									echo value | handle | remove: '-'
+								endif
+							endcapture
+
+							for variant in product.variants
+								if variant[variant_option] == value
+									assign variant_for_value = variant
+									break
+								endif
+							endfor
+						-%}
+
+						{%- if swatch == 'color' -%}
+							<a class="swatch" href="{{ variant_for_value.url | within: collection }}" style="background-color: {{ color }};" data-key="{{ variant_for_value.featured_image.src | handle | append: '-grid' }}" data-src="{{ variant_for_value.featured_media | image_url: width: 768 }}">
+								<span class="sr-only">{{- value -}}</span>
+								<span class="swatch-tooltip">{{- value -}}</span>
+							</a>
+						{%- else -%}
+							<a class="swatch" href="{{ variant_for_value.url | within: collection }}" data-key="{{ variant_for_value.featured_image.src | handle | append: '-grid' }}" data-src="{{ variant_for_value.featured_media | image_url: width: 768 }}">
+								<span class="sr-only">{{- value -}}</span>
+								<span class="swatch-tooltip">{{- value -}}</span>
+								{{- variant_for_value.featured_media | image_url: width: 200, height: 200, crop: 'center' | image_tag: loading: 'lazy' -}}
+							</a>
+						{%- endif -%}
+					{%- endfor -%}
+				</div>
+			{%- endif -%}
+		{%- endfor -%}
+	{%- endif -%}
+{%- endcapture -%}
+
+{% comment %} Add to cart {% endcomment %}
+{%- capture product_add_to_cart -%}
+	{%- form 'product', product, class: 'form-add-to-cart', novalidate: 'novalidate', data-type: 'add-to-cart-form', id: nil -%}
+		<input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+
+		{%- if product.available -%}
+			{%- if product.variants.size == 1 -%}
+				<button type="submit" name="add" class="add-to-cart-button">
+					{%- render 'icon', code: 'cart' -%}
+                  {{ settings.add_to_cart }}
+				</button>
+			{%- else -%}
+				<a href="{{ product.url }}" class="add-to-cart-button">{{- 'products.product.view_options' | t -}}</a>
+			{%- endif -%}
+		{%- else -%}
+			<button type="submit" name="add" class="add-to-cart-button" disabled>
+				{{- 'products.product.sold_out' | t -}}
+			</button>
+		{%- endif -%}
+	{%- endform -%}
+{%- endcapture -%}
+
+{% comment %} Label new product {% endcomment %}
+{% assign product_label_new = false %}
+{% capture _time %} {{ settings.product_new_time | times : 86400 }} {% endcapture %}
+{%- liquid
+	assign time = _time | plus : 0
+	assign now = 'now' | date: '%s' | plus : 0
+-%}
+{% capture _value %} {{ product.published_at | date: "%s" | plus : time }} {% endcapture %}
+{%- liquid
+	assign value = _value | plus : 0
+	if now < value
+		assign product_label_new = true
+	endif
+-%}
+
+<div class="product-card border-radius-theme text-{{ alignment | default: 'left' }}">
+	<div class="product-image-wrap {{ settings.card_image_ratio }}-media{{ image_effect }}{{ image_overlay }}" tabindex="-1">
+		<a href="{{ product.url | split: '?' | first }}" class="product-url">
+						<span class="sr-only">{{ product.title | escape }}</span>
+<div data-shop-id="{{shop.id}}" product-id="{{product.id }}" data-page="{{request.page_type}}" class="ddreview-star"></div>
+		</a>
+
+		{% comment %} Image {% endcomment %}
+		{%- if product.featured_media -%}
+			<img class="product-image{{ image_animation }}"
+				{% if settings.image_animation and cycle %}data-delay="{{ cycle | times: 0.15 }}s"{% endif %}
+				srcset="{%- if product.featured_media.width >= 165 -%}{{ product.featured_media | image_url: width: 165 }} 165w,{%- endif -%}
+					{%- if product.featured_media.width >= 360 -%}{{ product.featured_media | image_url: width: 360 }} 360w,{%- endif -%}
+					{%- if product.featured_media.width >= 533 -%}{{ product.featured_media | image_url: width: 533 }} 533w,{%- endif -%}
+					{%- if product.featured_media.width >= 720 -%}{{ product.featured_media | image_url: width: 720 }} 720w,{%- endif -%}
+					{%- if product.featured_media.width >= 940 -%}{{ product.featured_media | image_url: width: 940 }} 940w,{%- endif -%}
+					{%- if product.featured_media.width >= 1066 -%}{{ product.featured_media | image_url: width: 1066 }} 1066w{%- endif -%}"
+				{{ src_tag }}="{{ product.featured_media | image_url: width: 1066 }}"
+				sizes="(min-width: {{ settings.screen_lg }}px) {{ settings.screen_lg | minus: 130 | divided_by: 4 }}px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
+				data-key="{{ product.featured_media.src | handle | append: '-grid' }}"
+				alt="{{ product.featured_media.alt | escape }}"
+				loading="lazy"
+				width="{{ product.featured_media.width }}"
+				height="{{ product.featured_media.height }}">
+
+			{%- if product.media[1] != nil and settings.card_image_hover_effect != 'none' -%}
+				<span class="product-second-image motion-reduce">
+					<img srcset="{%- if product.media[1].width >= 165 -%}{{ product.media[1] | image_url: width: 165 }} 165w,{%- endif -%}
+							{%- if product.media[1].width >= 360 -%}{{ product.media[1] | image_url: width: 360 }} 360w,{%- endif -%}
+							{%- if product.media[1].width >= 533 -%}{{ product.media[1] | image_url: width: 533 }} 533w,{%- endif -%}
+							{%- if product.media[1].width >= 720 -%}{{ product.media[1] | image_url: width: 720 }} 720w,{%- endif -%}
+							{%- if product.media[1].width >= 940 -%}{{ product.media[1] | image_url: width: 940 }} 940w,{%- endif -%}
+							{%- if product.media[1].width >= 1066 -%}{{ product.media[1] | image_url: width: 1066 }} 1066w{%- endif -%}"
+						src="{{ product.media[1] | image_url: width: 1066 }}"
+						sizes="(min-width: {{ settings.screen_lg }}px) {{ settings.screen_lg | minus: 130 | divided_by: 4 }}px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
+						alt="{{ product.media[1].alt | escape }}"
+						loading="lazy"
+					width="{{ product.media[1].width }}"
+					height="{{ product.media[1].height }}">
+				</span>
+			{%- endif -%}
+		{%- else -%}
+			{{- 'image' | placeholder_svg_tag: 'placeholder-svg product-image' -}}
+		{%- endif -%}
+
+		{% comment %} Badge {% endcomment %}
+		{%- capture product_badge -%}
+			{%- if product.available == false -%}
+				<span class="badge sold-out" aria-hidden="true">{{- 'products.product.sold_out' | t -}}</span>
+			{%- elsif product.compare_at_price > product.price and product.available -%}
+				<span class="badge on-sale" aria-hidden="true">
+					<span class="sr-only">{{ 'products.product.on_sale' | t }}: </span>
+					{%- if product.compare_at_price_max > product.price -%}
+					-{{ product.compare_at_price_max | minus: product.price | times: 100.0 | divided_by: product.compare_at_price_max | round }}%
+					{%- endif -%}
+				</span>
+			{%- endif -%}
+		{%- endcapture -%}
+
+		{% comment %} Label New {% endcomment %}
+		{%- capture label_new_product -%}
+			{%- if settings.show_new_label and product_label_new == true -%}
+				<span class="new-lable-product">
+					{{ 'products.product.new_label_product' | t }}
+				</span>
+			{%- endif -%}
+		{%- endcapture -%}
+
+		{% if label_new_product != blank %}
+			<div class="labelnew-product">{{ label_new_product }}</div>
+		{% elsif product_badge != blank %}
+			<div class="product-badge">{{ product_badge }}</div>
+		{%- endif -%}
+
+		{% comment %} Actions {% endcomment %}
+		<div class="product-actions" data-handle="{{ product.handle }}" data-id="{{ product.id }}">
+			<span class="product-action product-wishlist link">
+				<span class="tooltip tooltip-top">{{- 'products.product.wishlist.add' | t -}}</span>
+				{%- render 'icon', code: 'wishlist' -%}
+			</span>
+           {% comment %}
+			<a class="product-action product-compare" href="{{ product.url | split: '?' | first }}">
+				<span class="tooltip tooltip-top">{{- 'products.product.compare.add' | t -}}</span>
+				{%- render 'icon', code: 'compare-product-hover' -%}
+			</a>
+            {% endcomment %}
+			<a class="product-action product-quick-view" href="{{ product.url | split: '?' | first }}">
+				<span class="tooltip tooltip-top">{{- 'products.product.quick_view' | t -}}</span>
+				{%- render 'icon', code: 'eye' -%}
+			</a>
+		</div>
+	</div>
+	<div class="product-content-wrap 123">
+<div class="product-detail-wrap">
+		{%- if section.settings.show_countdown -%}
+			{% if product.metafields.nesst_custom.countter_date != blank %}
+				<div class="countdown-time-wrap flat-countdown hidden">
+					<div class="countdown-time" data-time="{{ product.metafields.nesst_custom.countter_date | escape }}">
+						<div class="time-block">
+							<span class="time-number days hover-animated"></span>
+							<span class="lable-countdown">{{- 'products.countdown.days' | t -}}</span>
+						</div>
+
+						<div class="time-block">
+							<span class="time-number hours hover-animated"></span>
+							<span class="lable-countdown">{{- 'products.countdown.hours' | t -}}</span>
+						</div>
+
+						<div class="time-block">
+							<span class="time-number minutes hover-animated"></span>
+							<span class="lable-countdown">{{- 'products.countdown.mins' | t -}}</span>
+						</div>
+
+						<div class="time-block">
+							<span class="time-number seconds hover-animated"></span>
+							<span class="lable-countdown">{{- 'products.countdown.sec' | t -}}</span>
+						</div>
+					</div>
+				</div>
+			{% endif %}
+		{%- endif -%}
+
+		{% comment %} Collections {% endcomment %}
+		{%- if settings.card_show_collections and product.collections.first -%}
+			<div class="product-collections">
+				{%- for cat in product.collections -%}
+					<a href="{{ cat.url }}">{{ cat.title }}</a>{% unless forloop.last %}, {% endunless %}
+				{%- endfor -%}
+			</div>
+		{%- endif -%}
+
+		{% comment %} Tags {% endcomment %}
+		{%- if settings.card_show_tags and product.tags.first -%}
+			<div class="product-tags">
+				{%- for tag in product.tags -%}
+					{{ tag | link_to_add_tag: tag }}{% unless forloop.last %}, {% endunless %}
+				{%- endfor -%}
+			</div>
+		{%- endif -%}
+
+		{% comment %} Vendor {% endcomment %}
+		{%- if settings.card_show_vendor -%}
+			<div class="product-vendor">
+				<span class="sr-only">{{- 'accessibility.vendor' | t -}}</span>
+				{{ product.vendor | link_to_vendor: class: "product-vendor-link" }}
+			</div>
+		{%- endif -%}
+
+		{% comment %} Stock {% endcomment %}
+		{{- product_stock -}}
+
+		{% comment %} Title {% endcomment %}
+				{%- if settings.card_show_title -%}
+			<h2 class="product-title">
+				<a href="{{ product.url | split: '?' | first }}">{{- product.title | escape -}}</a>
+              <div data-shop-id="{{shop.id}}" product-id="{{product.id }}" data-page="{{request.page_type}}" class="ddreview-star"></div>
+			</h2>
+		{%- endif -%}
+      <div class="audien-review-star-rating" data-product-id="{{ card_product.id | default: product.id }}" data-domain="{{ shop.domain }}"></div>
+    </div>
+
+		{% comment %} Rating {% endcomment %}
+		{%- if settings.card_show_rating -%}
+			{%- liquid
+				assign reviews       = product.metafields.spr.reviews
+				assign review_count  = reviews | split: '"reviewCount": "' | last | split: '"' | first | plus: 0
+				assign review_rating = reviews | split: '"ratingValue": "' | last | split: '"' | first | plus: 0 | round: 2
+			-%}
+			{%- if review_count > 0 -%}
+				<div class="product-rating">
+					<span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+					<span class="rating-value">({{ review_rating }})</span>
+				</div>
+			{%- endif -%}
+		{%- endif -%}
+		
+		{% comment %} Swatches {% endcomment %}
+		{{- product_swatches -}}		
+
+		{% comment %} price and add to cart {% endcomment %}
+		<div class="product-card-bottom">
+			{% comment %} Price {% endcomment %}
+			{%- if settings.card_show_price -%}
+				{%- render 'price', product: product -%}
+			{%- endif -%}
+
+			{% comment %} Add to cart {% endcomment %}
+			{{- product_add_to_cart -}}
+		</div>
+
+	</div>
+</div>

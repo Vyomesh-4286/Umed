@@ -1,0 +1,63 @@
+<div class="product-details-tabs tabs border-radius-theme">
+  <div class="tabs-head">
+    <div class="tabs-head-desktop">
+      {% if section.settings.enable_pr_tab_details1 %}
+        <span class="tab-head active" data-index="a1">{{ section.settings.title_products_tab_details1 }}</span>
+      {% endif %}
+      {% if section.settings.enable_pr_tab_details2 %}
+        <span class="tab-head" data-index="a2">{{ section.settings.title_products_tab_details2 }}</span>
+      {% endif %}
+      {% if section.settings.enable_pr_tab_review %}
+        <span class="tab-head" data-index="tab_review">
+          {{- section.settings.title_products_tab_review -}}
+        </span>
+      {% endif %}
+    </div>
+
+    <div class="toggle-dropdown tabs-head-mobile">
+      <div class="dropdown-summary">
+        <span class="summary-info">{{ section.settings.title_products_tab_details1 }}</span>
+        {%- render 'icon', code: 'chevron-down' -%}
+      </div>
+
+      <div class="dropdown-content" role="list">
+        <div class="dropdown-content-inner">
+          <header class="dropdown-content-header">
+            <span class="dropdown-content-title">{{ section.settings.title_products_tab_details1 }}</span>
+            <span class="dropdown-content-title">{{ section.settings.title_products_tab_details2 }}</span>
+            <span class="dropdown-content-title">{{ section.settings.title_products_tab_review }}</span>
+
+            {%- render 'icon', code: 'chevron-down' -%}
+          </header>
+
+          <ul class="content" role="list">
+            <li class="dropdown-item" data-index="a1">{{ section.settings.title_products_tab_details1 }}</li>
+            <li class="dropdown-item" data-index="a2">{{ section.settings.title_products_tab_details2 }}</li>
+            <li class="dropdown-item" data-index="tab_review">{{ section.settings.title_products_tab_review }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs-content{% if section.settings.animation != 'none' %} animation-{{ section.settings.animation }}{% endif %}">
+    {% if section.settings.enable_pr_tab_details1 %}
+      <ul class="tab-content active" role="list" data-index="a1">
+        {{- product.description -}}
+      </ul>
+    {% endif %}
+    {% if section.settings.enable_pr_tab_details2 %}
+      <ul class="tab-content" role="list" data-index="a2">
+        {% if product.metafields.custom.additional_information != blank %}
+          {{ product.metafields.custom.additional_information | metafield_tag }}
+        {% endif %}
+      </ul>
+    {% endif %}
+
+    {% if section.settings.enable_pr_tab_review %}
+      <ul class="tab-content append-review-section" role="list" data-index="tab_review">
+        <div id="audienReviews" data-product-id="{{product.id}}" class="audien-review-review-list"></div>
+      </ul>
+    {% endif %}
+  </div>
+</div>

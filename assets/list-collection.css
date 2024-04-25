@@ -1,0 +1,49 @@
+.list-collection-section {
+  padding: 2rem 0 6rem 0;
+}
+.list-collection-section .title {
+  font-size: 3rem;
+  font-weight: 400;
+}
+.list-collection-section .card {
+  position: relative;
+  margin-bottom: 3rem;
+}
+@media (hover: hover) {
+  .list-collection-section .card:hover img {
+    transform: scale(1.05);
+  }
+}
+.list-collection-section .card-link {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+}
+.list-collection-section .card-media {
+  position: relative;
+  overflow: hidden;
+}
+.list-collection-section .card-media img {
+  transition-duration: 0.2s;
+}
+.list-collection-section .card-meta {
+  padding: 2rem;
+  background-color: #f6f6f6;
+}
+.list-collection-section .card-title {
+  margin: 0;
+  line-height: 1;
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+.list-collection-section .card-title svg {
+  width: 1.2rem;
+  margin-left: 1rem;
+}
+.list-collection-section .card-desc {
+  margin-top: 1rem;
+  margin-bottom: 0;
+}

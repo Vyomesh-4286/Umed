@@ -1,0 +1,33 @@
+<div class="popup-cookies">
+	<div class="popup-content">
+		<div class="popup-info">
+			{% if section.settings.content_cookies != blank %}
+				<p>{{ section.settings.content_cookies }}</p>
+			{% endif %}
+		</div>
+
+		<div class="button-accept">
+			<button class="button-cookies acceptcookies">{{ section.settings.button_name }}</button>
+		</div>
+	</div>
+</div>
+
+{% schema %}
+	{
+		"name": "t:sections.popup-cookies.name",
+		"settings": [
+			{
+				"type": "text",
+				"id": "content_cookies",
+				"default": "We use cookies to improve your experience on our website. By browsing this website, you agree to our use of cookies",
+				"label": "t:sections.popup-cookies.settings.content_cookies.label"
+			},
+			{
+				"type": "text",
+				"id": "button_name",
+				"default": "Accept",
+				"label": "t:sections.popup-cookies.settings.button_name.label"
+			}
+		]
+	}
+{% endschema %}

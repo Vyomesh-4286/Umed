@@ -1,0 +1,529 @@
+{%- liquid
+	assign section_id = '#shopify-section-' | append: section.id
+	assign product    = section.settings.select_product
+-%}
+
+{%- if section.settings.show_index -%}
+	{%- if template contains 'index' -%}
+		<div class="popup-countdown-visit-website">
+			<div class="popup-overlay popup-countdown-visit-website-overlay">
+				<div class="popup-inner">
+					<span class="close-popup-countdown close-button">
+						{%- render 'icon', code: 'close-thin' -%}
+					</span>
+
+					<div class="popup-content">
+
+						{% if product != blank %}
+							{%- render 'product-popup', product: product -%}
+						{% else %}
+						
+							<div class="product-summary-popup">
+								<h1 class="product-title">
+									{{- 'onboarding.products.title' | t -}}
+								</h1>
+
+								<div class="product-price">
+									{%- render 'price-single' -%}
+								</div>
+							</div>
+						
+						{%- endif -%}				
+
+					</div>
+				</div>
+			</div>	
+		</div>
+	{%- endif -%}
+{%- endif -%}
+
+{%- if section.settings.show_product -%}
+	{%- if template contains 'product' -%}
+		<div class="popup-countdown-visit-website">
+			<div class="popup-overlay popup-countdown-visit-website-overlay">
+				<div class="popup-inner">
+					<span class="close-popup-countdown close-button">
+						{%- render 'icon', code: 'close-thin' -%}
+					</span>
+
+					<div class="popup-content">
+
+						{% if product != blank %}
+							{%- render 'product-popup', product: product -%}
+						{% else %}
+						
+							<div class="product-summary-popup">
+								<h1 class="product-title">
+									{{- 'onboarding.products.title' | t -}}
+								</h1>
+
+								<div class="product-price">
+									{%- render 'price-single' -%}
+								</div>
+							</div>
+						
+						{%- endif -%}				
+
+					</div>
+				</div>
+			</div>	
+		</div>
+	{%- endif -%}
+{%- endif -%}
+
+{%- if section.settings.show_collection -%}
+	{%- if template contains 'collection' or template contains 'list-collections' -%}
+		<div class="popup-countdown-visit-website">
+			<div class="popup-overlay popup-countdown-visit-website-overlay">
+				<div class="popup-inner">
+					<span class="close-popup-countdown close-button">
+						{%- render 'icon', code: 'close-thin' -%}
+					</span>
+
+					<div class="popup-content">
+
+						{% if product != blank %}
+							{%- render 'product-popup', product: product -%}
+						{% else %}
+						
+							<div class="product-summary-popup">
+								<h1 class="product-title">
+									{{- 'onboarding.products.title' | t -}}
+								</h1>
+
+								<div class="product-price">
+									{%- render 'price-single' -%}
+								</div>
+							</div>
+						
+						{%- endif -%}				
+
+					</div>
+				</div>
+			</div>	
+		</div>
+	{%- endif -%}
+{%- endif -%}
+
+{%- if section.settings.show_blog -%}
+	{%- if template contains 'blog' -%}
+		<div class="popup-countdown-visit-website">
+			<div class="popup-overlay popup-countdown-visit-website-overlay">
+				<div class="popup-inner">
+					<span class="close-popup-countdown close-button">
+						{%- render 'icon', code: 'close-thin' -%}
+					</span>
+
+					<div class="popup-content">
+
+						{% if product != blank %}
+							{%- render 'product-popup', product: product -%}
+						{% else %}
+						
+							<div class="product-summary-popup">
+								<h1 class="product-title">
+									{{- 'onboarding.products.title' | t -}}
+								</h1>
+
+								<div class="product-price">
+									{%- render 'price-single' -%}
+								</div>
+							</div>
+						
+						{%- endif -%}				
+
+					</div>
+				</div>
+			</div>	
+		</div>
+	{%- endif -%}
+{%- endif -%}
+
+{%- if section.settings.show_article -%}
+	{%- if template contains 'article' -%}
+		<div class="popup-countdown-visit-website">
+			<div class="popup-overlay popup-countdown-visit-website-overlay">
+				<div class="popup-inner">
+					<span class="close-popup-countdown close-button">
+						{%- render 'icon', code: 'close-thin' -%}
+					</span>
+
+					<div class="popup-content">
+
+						{% if product != blank %}
+							{%- render 'product-popup', product: product -%}
+						{% else %}
+						
+							<div class="product-summary-popup">
+								<h1 class="product-title">
+									{{- 'onboarding.products.title' | t -}}
+								</h1>
+
+								<div class="product-price">
+									{%- render 'price-single' -%}
+								</div>
+							</div>
+						
+						{%- endif -%}				
+
+					</div>
+				</div>
+			</div>	
+		</div>
+	{%- endif -%}
+{%- endif -%}
+
+{%- if section.settings.show_other_page -%}
+	{%- if template contains 'page' -%}
+		<div class="popup-countdown-visit-website">
+			<div class="popup-overlay popup-countdown-visit-website-overlay">
+				<div class="popup-inner">
+					<span class="close-popup-countdown close-button">
+						{%- render 'icon', code: 'close-thin' -%}
+					</span>
+
+					<div class="popup-content">
+
+						{% if product != blank %}
+							{%- render 'product-popup', product: product -%}
+						{% else %}
+						
+							<div class="product-summary-popup">
+								<h1 class="product-title">
+									{{- 'onboarding.products.title' | t -}}
+								</h1>
+
+								<div class="product-price">
+									{%- render 'price-single' -%}
+								</div>
+							</div>
+						
+						{%- endif -%}				
+
+					</div>
+				</div>
+			</div>	
+		</div>
+	{%- endif -%}
+{%- endif -%}
+
+<style>
+
+	{%- if section.settings.bg_image != blank -%}
+		{{ section_id }} .popup-content {
+			background-image: url({{ section.settings.bg_image | image_url: width: 900 }});
+			background-size: contain;
+		    background-position: right center;
+		    background-repeat: no-repeat;
+		    min-height: 420px;
+		}
+	{%- endif -%}
+
+	{%- for block in section.blocks -%}
+		{%- if block.type != '@app' -%}
+			{{ section_id }} [data-{{ block.id }}] {
+				margin-bottom: {{ block.settings.margin_bottom }}px;
+			}
+		{%- endif -%}
+
+		{%- case block.type -%}
+			{%- when 'text' -%}
+				{{ section_id }} [data-{{ block.id }}].product-text{
+					{%- if block.settings.text_color != blank -%}
+						color: {{ block.settings.text_color }};
+					{%- endif -%}
+
+					font-size: {{ block.settings.font_size }}px;
+				}
+
+			{%- when 'title_product' -%}
+				{{ section_id }} [data-{{ block.id }}].product-title{
+					font-size: {{ block.settings.font_size }}px;
+				}
+
+				@media (max-width: 991px){
+					{{ section_id }} [data-{{ block.id }}].product-title{
+						font-size: {{ block.settings.font_size | times: 0.6 }}px;
+					}
+				}
+
+		{%- endcase -%}
+	{%- endfor -%}
+
+
+</style>
+
+{% schema %}
+{
+	"name": "t:sections.popup-countdown-visit-website.name",
+	"class": "popup-countdown-visit-website-section",
+	"settings": [
+		{
+			"type": "header",
+			"content": "t:sections.popup-countdown-visit-website.settings.header_popup.content"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_index",
+			"default": true,
+			"label": "t:sections.popup-countdown-visit-website.settings.show_index.label",
+			"info": "t:sections.popup-countdown-visit-website.settings.show_index.info"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_product",
+			"default": false,
+			"label": "t:sections.popup-countdown-visit-website.settings.show_product.label",
+			"info": "t:sections.popup-countdown-visit-website.settings.show_product.info"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_collection",
+			"default": false,
+			"label": "t:sections.popup-countdown-visit-website.settings.show_collection.label",
+			"info": "t:sections.popup-countdown-visit-website.settings.show_collection.info"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_blog",
+			"default": false,
+			"label": "t:sections.popup-countdown-visit-website.settings.show_blog.label",
+			"info": "t:sections.popup-countdown-visit-website.settings.show_blog.info"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_article",
+			"default": false,
+			"label": "t:sections.popup-countdown-visit-website.settings.show_article.label",
+			"info": "t:sections.popup-countdown-visit-website.settings.show_article.info"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_other_page",
+			"default": false,
+			"label": "t:sections.popup-countdown-visit-website.settings.show_other_page.label",
+			"info": "t:sections.popup-countdown-visit-website.settings.show_other_page.info"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.popup-countdown-visit-website.settings.header_content_popup.content"
+		},
+		{
+			"type": "product",
+			"id": "select_product",
+			"label": "t:sections.popup-countdown-visit-website.settings.select_product.label"
+		},
+		{
+			"type": "image_picker",
+			"id": "bg_image",
+			"label": "t:sections.popup-countdown-visit-website.settings.bg_image.label"
+		}
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "text",
+			"name": "t:sections.popup-countdown-visit-website.blocks.text.name",
+			"settings": [
+				{
+					"type": "text",
+					"id": "text_popup",
+					"default": "Deal of the Day",
+					"label": "t:sections.popup-countdown-visit-website.blocks.text.settings.text_popup.label"
+				},
+				{
+					"type": "color",
+					"id": "text_color",
+					"label": "t:sections.popup-countdown-visit-website.blocks.text.settings.text_color.label"
+				},
+				{
+					"type": "range",
+					"id": "font_size",
+					"min": 1,
+					"max": 100,
+					"step": 1,
+					"default": 18,
+					"unit": "px",
+					"label": "t:sections.popup-countdown-visit-website.settings.font_size.label"
+				},
+				{
+					"type": "range",
+					"id": "margin_bottom",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 4,
+					"unit": "px",
+					"label": "t:sections.popup-countdown-visit-website.settings.margin_bottom.label"
+				}
+			]
+		},
+		{
+			"type": "title_product",
+			"name": "t:sections.popup-countdown-visit-website.blocks.title_product.name",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "range",
+					"id": "font_size",
+					"min": 1,
+					"max": 100,
+					"step": 1,
+					"default": 45,
+					"unit": "px",
+					"label": "t:sections.popup-countdown-visit-website.settings.font_size.label"
+				},
+				{
+					"type": "range",
+					"id": "margin_bottom",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 10,
+					"unit": "px",
+					"label": "t:sections.popup-countdown-visit-website.settings.margin_bottom.label"
+				}
+			]
+		},
+		{
+			"type": "price_product",
+			"name": "t:sections.popup-countdown-visit-website.blocks.price_product.name",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "range",
+					"id": "margin_bottom",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 30,
+					"unit": "px",
+					"label": "t:sections.popup-countdown-visit-website.settings.margin_bottom.label"
+				}
+			]
+		},
+		{
+			"type": "coundow_product",
+			"name": "t:sections.popup-countdown-visit-website.blocks.coundow_product.name",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "text",
+					"id": "text_coundow",
+					"default": "Hurry Up! Offer End In:",
+					"label": "t:sections.popup-countdown-visit-website.settings.text_coundow.label"
+				},
+				{
+					"type": "range",
+					"id": "margin_bottom",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 30,
+					"unit": "px",
+					"label": "t:sections.popup-countdown-visit-website.settings.margin_bottom.label"
+				}
+			]
+		},
+		{
+			"type": "rate_product",
+			"name": "t:sections.popup-countdown-visit-website.blocks.rate_product.name",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "range",
+					"id": "margin_bottom",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 18,
+					"unit": "px",
+					"label": "t:sections.popup-countdown-visit-website.settings.margin_bottom.label"
+				}
+			]
+		},
+		{
+			"type": "button",
+			"name": "t:sections.popup-countdown-visit-website.blocks.button.name",
+			"settings": [
+				{
+					"type": "text",
+					"id": "button_name",
+					"default": "Shop Now",
+					"label": "t:sections.popup-countdown-visit-website.blocks.button.settings.button_name.label"
+				},
+				{
+					"type": "url",
+					"id": "button_url",
+					"default": "/collections/all",
+					"label": "t:sections.popup-countdown-visit-website.blocks.button.settings.button_url.label"
+				},
+				{
+					"type": "range",
+					"id": "margin_bottom",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 0,
+					"unit": "px",
+					"label": "t:sections.popup-countdown-visit-website.settings.margin_bottom.label"
+				}
+			]
+		},
+		{
+			"type": "newsletter",
+			"name": "t:sections.popup-countdown-visit-website.blocks.newsletter.name",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "text",
+					"id": "email_placeholder",
+					"default": "Your email address",
+					"label": "t:sections.popup-countdown-visit-website.blocks.newsletter.settings.email_placeholder.label"
+				},
+				{
+					"type": "text",
+					"id": "button_submit",
+					"default": "Subscribe",
+					"label": "t:sections.popup-countdown-visit-website.blocks.newsletter.settings.button_submit.label"
+				},
+				{
+					"type": "range",
+					"id": "margin_bottom",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 0,
+					"unit": "px",
+					"label": "t:sections.popup-countdown-visit-website.settings.margin_bottom.label"
+				}
+			]
+		}
+		
+	],
+	"default":  {
+		"blocks": [
+			{
+				"type": "text"
+			},
+			{
+				"type": "title_product"
+			},
+			{
+				"type": "price_product"
+			},
+			{
+				"type": "rate_product"
+			},
+			{
+				"type": "coundow_product"
+			},
+			{
+				"type": "button"
+			}
+		]
+	}
+}
+{% endschema %}

@@ -1,0 +1,449 @@
+{%- liquid
+  assign section_id = '#shopify-section-' | append: section.id
+  assign full = section.settings.full
+-%}
+
+<style>
+  {{ section_id }} {
+  	{%- if full -%}
+  		padding-left: 15px;
+  		padding-right: 15px;
+  	{%- endif -%}
+
+  	padding-top: {{ section.settings.padding_top_mobile }}px;
+  	padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+  }
+
+  {{ section_id }} .tabs-head {
+  	margin-bottom: {{ section.settings.head_padding_bottom | times: 0.85 }}px;
+  }
+
+  {{ section_id }} .tabs-head .title-section h2 {
+  	font-size: {{ section.settings.head_font_size }}px;
+  }
+
+  {{ section_id }} .tabs-head .tabs-head-desktop,
+  {{ section_id }} .tabs-head .tabs-head-mobile {
+  	font-size: {{ section.settings.tab_head_font_size }}px;
+  }
+
+  @media (min-width: 768px) {
+  	{{ section_id }} {
+  		padding-top: {{ section.settings.padding_top }}px;
+  		padding-bottom: {{ section.settings.padding_bottom }}px;
+  	}
+
+  	{{ section_id }} .tabs-head {
+  		margin-bottom: {{ section.settings.head_padding_bottom }}px;
+  	}
+  }
+</style>
+
+{%- if section.blocks.size > 0 -%}
+  <div class="{% if full %}stretch-section{% else %}container{% endif %}">
+    <div class="product-tabs tabs">
+      <div class="tabs-head">
+        {% if section.settings.title_section != blank %}
+          <div class="title-section">
+            <h2 class="heading-font-family">{{ section.settings.title_section }}</h2>
+          </div>
+        {% endif %}
+        {% comment %}
+          <div class="tabs-head-desktop">
+          	{%- for block in section.blocks -%}
+          		<span class="hover-animated tab-head{% if forloop.index == 1 %} active{% endif %}" data-index="{{ forloop.index }}" {{ block.shopify_attributes }}{% if request.design_mode %} data-id="{{ block.id }}"{% endif %}>
+          			{%- liquid
+          				assign collection = block.settings.collection
+
+          				if block.settings.name != blank
+          					echo block.settings.name | escape
+          				elsif collection != blank
+          					echo collection.title
+          				else
+          					echo 'general.text.tab' | t | append: ' ' | append: forloop.index
+          				endif
+          			-%}
+          		</span>
+          	{%- endfor -%}
+          </div>
+        {% endcomment %}
+        <div class="tabs-head-desktop">
+          {%- for block in section.blocks -%}
+            {%- liquid
+              assign collection = block.settings.collection
+              assign name = block.settings.name | escape
+            -%}
+            <span
+              class="hover-animated tab-head{% if forloop.index == 1 %} active{% endif %}"
+              data-index="{{ forloop.index }}"
+              {{ block.shopify_attributes -}}
+              {% if request.design_mode %}
+                data-id="{{ block.id }}"
+              {% endif %}
+            >
+              {%- if name != blank -%}
+                <a href="{{ collection.url }}" class="tab-link">{{ name }}</a>
+              {%- else -%}
+                {%- if collection != blank -%}
+                  <a href="{{ collection.url }}" class="tab-link">{{ collection.title }}</a>
+                {%- else -%}
+                  {{ 'general.text.tab' | t | append: ' ' | append: forloop.index }}
+                {%- endif -%}
+              {%- endif -%}
+            </span>
+          {%- endfor -%}
+        </div>
+        <div class="toggle-dropdown tabs-head-mobile">
+          <div class="dropdown-summary">
+            <span class="summary-info">
+              {%- liquid
+                for block in section.blocks limit: 1
+                  assign collection = block.settings.collection
+
+                  if block.settings.name != blank
+                    echo block.settings.name | escape
+                  elsif collection != blank
+                    echo collection.title
+                  else
+                    echo 'general.text.tab' | t | append: ' ' | append: forloop.index
+                  endif
+                endfor
+              -%}
+            </span>
+
+            {%- render 'icon', code: 'chevron-down' -%}
+          </div>
+
+          <div class="dropdown-content" role="list">
+            <div class="dropdown-content-inner">
+              <header class="dropdown-content-header">
+                <span class="dropdown-content-title">
+                  {%- liquid
+                    for block in section.blocks limit: 1
+                      assign collection = block.settings.collection
+
+                      if block.settings.name != blank
+                        echo block.settings.name | escape
+                      elsif collection != blank
+                        echo collection.title
+                      else
+                        echo 'general.text.tab' | t | append: ' ' | append: forloop.index
+                      endif
+                    endfor
+                  -%}
+                </span>
+
+                {%- render 'icon', code: 'chevron-down' -%}
+              </header>
+
+              <ul class="content" role="list">
+                {%- for block in section.blocks -%}
+                  {%- liquid
+                    assign collection = block.settings.collection
+
+                    if block.settings.name != blank
+                      assign name = block.settings.name | escape
+                    elsif collection != blank
+                      assign name = collection.title
+                    else
+                      assign name = 'general.text.tab' | t | append: ' ' | append: forloop.index
+                    endif
+                  -%}
+
+                  <li class="dropdown-item" data-value="{{ name }}" data-index="{{ forloop.index }}">{{- name -}}</li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabs-content{% if section.settings.animation != 'none' %} animation-{{ section.settings.animation }}{% endif %}">
+        {%- for block in section.blocks -%}
+          <ul
+            class="tab-content grid grid-{{ block.settings.columns }} grid-tablet-3 grid-mobile-2{% if forloop.index == 1 %} active{% endif %}"
+            role="list"
+            data-index="{{ forloop.index }}"
+          >
+            {%- liquid
+              assign collection = block.settings.collection
+              assign total = block.settings.rows | times: block.settings.columns
+            -%}
+
+            {%- for product in collection.products limit: total -%}
+              <li class="grid-item">
+                {%- liquid
+                  capture for_cycle
+                    case block.settings.columns
+                      when 2
+                        cycle 1, 2
+                      when 3
+                        cycle 1, 2, 3
+                      when 4
+                        cycle 1, 2, 3, 4
+                      when 5
+                        cycle 1, 2, 3, 4, 5
+                      when 6
+                        cycle 1, 2, 3, 4, 5, 6
+                      when 7
+                        cycle 1, 2, 3, 4, 5, 6, 7
+                      when 8
+                        cycle 1, 2, 3, 4, 5, 6, 7, 8
+                      when 9
+                        cycle 1, 2, 3, 4, 5, 6, 7, 8, 9
+                      when 10
+                        cycle 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+                      when 11
+                        cycle 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+                      when 12
+                        cycle 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+                    endcase
+                  endcapture
+
+                  render 'product-card', product: product, cycle: for_cycle
+                -%}
+              </li>
+            {%- else -%}
+              {%- for i in (1..total) -%}
+                {%- liquid
+                  capture index
+                    cycle 1, 2, 3, 4, 5, 6
+                  endcapture
+                -%}
+
+                <li class="grid-item 13">
+                  {%- render 'product-card-placeholder', index: index -%}
+                </li>
+              {%- endfor -%}
+            {%- endfor -%}
+          </ul>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    {%- if section.settings.button_label != blank -%}
+      <div class="button-wrap">
+        <a class="button primary-button small-button" href="{{ section.settings.button_url | default: '#' }}">
+          {{- section.settings.button_label | escape -}}
+        </a>
+      </div>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+	"name": "t:sections.product-tabs.name",
+	"tag": "section",
+	"class": "product-tabs-section",
+	"settings": [
+		{
+			"type": "select",
+			"id": "animation",
+			"options": [
+				{
+					"value": "none",
+					"label": "t:sections.product-tabs.settings.animation.option_1.label"
+				},
+				{
+					"value": "up",
+					"label": "t:sections.product-tabs.settings.animation.option_2.label"
+				},
+				{
+					"value": "down",
+					"label": "t:sections.product-tabs.settings.animation.option_3.label"
+				}
+			],
+			"default": "none",
+			"label": "t:sections.product-tabs.settings.animation.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.product-tabs.settings.header_head.content"
+		},
+		{
+			"type": "text",
+			"id": "title_section",
+			"default": "Popular Products",
+			"label": "t:sections.product-tabs.settings.title_section.label"
+		},
+		{
+			"type": "range",
+			"min": 10,
+			"max": 100,
+			"step": 1,
+			"default": 32,
+			"unit": "px",
+			"id": "head_font_size",
+			"label": "t:sections.product-tabs.settings.head_font_size.label"
+		},
+		{
+			"type": "range",
+			"min": 10,
+			"max": 100,
+			"step": 1,
+			"default": 16,
+			"unit": "px",
+			"id": "tab_head_font_size",
+			"label": "t:sections.product-tabs.settings.tab_head_font_size.label"
+		},
+		{
+			"type": "range",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 44,
+			"unit": "px",
+			"id": "head_padding_bottom",
+			"label": "t:sections.product-tabs.settings.head_padding_bottom.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.product-tabs.settings.header_button.content"
+		},
+		{
+			"type": "text",
+			"id": "button_label",
+			"label": "t:sections.product-tabs.settings.button_label.label"
+		},
+		{
+			"type": "url",
+			"id": "button_url",
+			"label": "t:sections.product-tabs.settings.button_url.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"blocks": [
+		{
+			"type": "tab",
+			"name": "t:sections.product-tabs.blocks.tab.name",
+			"settings": [
+				{
+					"type": "text",
+					"id": "name",
+					"label": "t:sections.product-tabs.blocks.tab.settings.name.label"
+				},
+				{
+					"type": "range",
+					"id": "columns",
+					"min": 2,
+					"max": 6,
+					"step": 1,
+					"default": 3,
+					"label": "t:sections.product-tabs.blocks.tab.settings.columns.label"
+				},
+				{
+					"type": "range",
+					"id": "rows",
+					"min": 1,
+					"max": 6,
+					"step": 1,
+					"default": 1,
+					"label": "t:sections.product-tabs.blocks.tab.settings.rows.label"
+				},
+				{
+					"type": "collection",
+					"id": "collection",
+					"label": "t:sections.product-tabs.blocks.tab.settings.collection.label"
+				}
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.product-tabs.presets.name",
+			"blocks": [
+				{
+					"type": "tab",
+					"settings": {
+						"name": "All"
+					}
+				},
+				{
+					"type": "tab",
+					"settings": {
+						"name": "Milks & Dairies"
+					}
+				},
+				{
+					"type": "tab",
+					"settings": {
+						"name": "Coffes & Teas"
+					}
+				},
+				{
+					"type": "tab",
+					"settings": {
+						"name": "Pet Foods"
+					}
+				},
+				{
+					"type": "tab",
+					"settings": {
+						"name": "Meats"
+					}
+				},
+				{
+					"type": "tab",
+					"settings": {
+						"name": "Vegetables"
+					}
+				},
+				{
+					"type": "tab",
+					"settings": {
+						"name": "Fruits"
+					}
+				}
+			]
+		}
+	]
+}
+{% endschema %}

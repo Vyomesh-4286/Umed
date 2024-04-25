@@ -1,0 +1,178 @@
+{%- liquid
+  assign section_id = '#shopify-section-' | append: section.id
+  assign product = section.settings.select_product
+-%}
+
+{%- if section.settings.show_index -%}
+  {%- if template contains 'index' -%}
+    <div class="popup-countdown-visit-website">
+      <div class="popup-overlay popup-countdown-visit-website-overlay">
+        <div class="popup-inner">
+          <span class="close-popup-countdown close-button">
+            {%- render 'icon', code: 'close-thin' -%}
+          </span>
+          {% if section.settings.bg_image != blank %}
+            <div class="welcome-popup-image">
+              <img src="{{ section.settings.bg_image | img_url: 'master' }}" alt="" loading="lazy">
+            </div>
+          {% endif %}
+          <div class="popup-content">
+            {%- render 'welcome-pop', product: product -%}
+          </div>
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+{%- endif -%}
+{%- if section.settings.show_other_page -%}
+  {%- if template contains 'page' -%}
+    <div class="popup-countdown-visit-website">
+      <div class="popup-overlay popup-countdown-visit-website-overlay">
+        <div class="popup-inner">
+          <span class="close-popup-countdown close-button">
+            {%- render 'icon', code: 'close-thin' -%}
+          </span>
+          <div class="popup-content">
+            {%- render 'welcome-pop', product: product -%}
+          </div>
+          {% if section.settings.bg_image != blank %}
+            <div class="welcome-popup-image">
+              <img src="{{ section.settings.bg_image | img_url: 'master' }}" alt="" loading="lazy">
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+{%- endif -%}
+
+<style>
+  {%- for block in section.blocks -%}
+  	{%- if block.type != '@app' -%}
+  		{{ section_id }} [data-{{ block.id }}] {
+  			margin-bottom: {{ block.settings.margin_bottom }}px;
+  		}
+  	{%- endif -%}
+
+  	{%- case block.type -%}
+  		{%- when 'text' -%}
+  			{{ section_id }} [data-{{ block.id }}].product-text{
+  				{%- if block.settings.text_color != blank -%}
+  					color: {{ block.settings.text_color }};
+  				{%- endif -%}
+
+  				font-size: {{ block.settings.font_size }}px;
+  			}
+
+  		{%- when 'title_product' -%}
+  			{{ section_id }} [data-{{ block.id }}].product-title{
+  				font-size: {{ block.settings.font_size }}px;
+  			}
+
+  			@media (max-width: 991px){
+  				{{ section_id }} [data-{{ block.id }}].product-title{
+  					font-size: {{ block.settings.font_size | times: 0.6 }}px;
+  				}
+  			}
+
+  	{%- endcase -%}
+  {%- endfor -%}
+</style>
+
+{% schema %}
+{
+	"name": "Welcome Popup",
+	"class": "popup-countdown-visit-website-section",
+	"settings": [
+		{
+			"type": "header",
+			"content": "t:sections.popup-countdown-visit-website.settings.header_popup.content"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_index",
+			"default": true,
+			"label": "t:sections.popup-countdown-visit-website.settings.show_index.label",
+			"info": "t:sections.popup-countdown-visit-website.settings.show_index.info"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_other_page",
+			"default": false,
+			"label": "t:sections.popup-countdown-visit-website.settings.show_other_page.label",
+			"info": "t:sections.popup-countdown-visit-website.settings.show_other_page.info"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.popup-countdown-visit-website.settings.header_content_popup.content"
+		},
+		{
+			"type": "image_picker",
+			"id": "bg_image",
+			"label": "t:sections.popup-countdown-visit-website.settings.bg_image.label"
+		}
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "newsletter",
+			"name": "t:sections.popup-countdown-visit-website.blocks.newsletter.name",
+			"limit": 1,
+			"settings": [
+               {
+					"type": "text",
+					"id": "number_placeholder",
+					"default":"Your number address",
+					"label": "Number placeholder"
+				},
+                {
+                  "type":"textarea",
+                  "id":"subscription_checkbox",
+                  "label":"Subscription Checkbox Info"
+                },
+				{
+					"type": "text",
+					"id": "email_placeholder",
+					"default": "Your email address",
+					"label": "t:sections.popup-countdown-visit-website.blocks.newsletter.settings.email_placeholder.label"
+				},
+                {
+                  "type":"text",
+                  "id":"heading",
+                  "label":"Form Heading",
+                  "default":"Welcome To Umed Mart"
+                },
+               {
+                 "type":"richtext",
+                 "id":"form_description",
+                 "label":"Form Description"
+               },
+				{
+					"type": "text",
+					"id": "button_submit",
+					"default": "Subscribe",
+					"label": "t:sections.popup-countdown-visit-website.blocks.newsletter.settings.button_submit.label"
+				},
+				{
+					"type": "range",
+					"id": "margin_bottom",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 0,
+					"unit": "px",
+					"label": "t:sections.popup-countdown-visit-website.settings.margin_bottom.label"
+				}
+			]
+		}
+
+	],
+"presets": [
+  {
+    "name":"Welcome Popup"
+  }
+]
+}
+{% endschema %}

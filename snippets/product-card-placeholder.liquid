@@ -1,0 +1,45 @@
+{% comment %} Add to cart {% endcomment %}
+{%- capture product_add_to_cart -%}
+		<input type="hidden" name="id" >
+		<button type="submit" name="add" class="add-to-cart-button">
+			{%- render 'icon', code: 'cart' -%}
+			{{- 'products.product.add_to_cart' | t -}}
+		</button>
+{%- endcapture -%}
+
+<div class="product-card text-left border-radius-theme">	
+	<div class="product-image-wrap square-media card-item" tabindex="-1">
+		{{- 'product-' | append: index | placeholder_svg_tag: 'placeholder-svg' -}}
+
+		<div class="product-actions" data-handle="#">
+			<span class="product-action">
+				<span class="tooltip tooltip-top">{{- 'products.product.wishlist.add' | t -}}</span>
+				{%- render 'icon', code: 'wishlist' -%}
+			</span>
+
+			<a class="product-action" href="#">
+				<span class="tooltip tooltip-top">{{- 'products.product.compare.add' | t -}}</span>
+				{%- render 'icon', code: 'compare-product-hover' -%}
+			</a>
+
+			<a class="product-action" href="#">
+				<span class="tooltip tooltip-top">{{- 'products.product.quick_view' | t -}}</span>
+				{%- render 'icon', code: 'eye' -%}
+			</a>
+		</div>
+	</div>
+
+	<div class="product-content-wrap">
+		<div class="product-collections">
+			<a href="#">Collection</a>
+		</div>
+		<h2 class="product-title card-item">
+			<span>{{- 'onboarding.products.title' | t -}}</span>
+		</h2>
+
+		<div class="product-card-bottom">
+			{%- render 'price', product: product -%}
+			{{- product_add_to_cart -}}
+		</div>
+	</div>	
+</div>

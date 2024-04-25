@@ -1,0 +1,22 @@
+<div class="quantity">
+	<button class="quantity-button" name="minus" type="button">
+		<span class="sr-only">{{ 'products.product.quantity.decrease' | t: product: product.title | escape }}</span>
+		{% render 'icon', code: 'chevron-down' %}
+	</button>
+
+	<label for="quantity-{{ product.id }}" class="sr-only">{{- 'products.product.quantity.label' -}}</label>
+	<input class="quantity-input"
+		type="number"
+		name="quantity"
+		id="quantity-{{ product.id }}"
+		min="1"
+		step="1"
+		value="1"
+		{%- if form_id -%}form="{{ form_id }}"{%- endif -%}
+		data-noui>
+
+	<button class="quantity-button" name="plus" type="button">
+		<span class="sr-only">{{ 'products.product.quantity.increase' | t: product: product.title | escape }}</span>
+		{% render 'icon', code: 'chevron-up' %}
+	</button>
+</div>

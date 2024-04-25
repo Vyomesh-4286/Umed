@@ -1,0 +1,137 @@
+<style>
+{% for block in section.blocks %}
+      {%- if block.settings.image != blank -%}
+        #{{ section.id }} [data-block-id="{{ block.id }}"] .testimonial-image {
+            background-color: {{ block.settings.image_bg_color }};
+        }
+    {%- endif -%}
+    {%- if block.settings.testimonial_block_heading != blank -%}
+        #{{ section.id }} [data-block-id="{{ block.id }}"] .testimonial-block-heading {
+            color: {{ block.settings.description_color }};
+        }
+    {%- endif -%}
+    {%- if block.settings.testimonial_block_description != blank -%}
+        #{{ section.id }} [data-block-id="{{ block.id }}"] .testimonial-block-description {
+            color: {{ block.settings.description_color }};
+        }
+    {%- endif -%}
+    #{{ section.id }} [data-block-id="{{ block.id }}"] .testimonial-block-description-heading {
+        background-color: {{ block.settings.description_bg_color }};
+        color: {{ block.settings.description_color }};  
+    }
+{% endfor %}
+</style>
+
+<section id="{{ section.id }}" class="testimonial-block-wapper section section--{{ section.type }} {{ section.settings.text_alignment }}">
+  <div class="container">
+    <div class="section-header text-center">
+       {% if section.settings.section_heading != blank %}
+        <h2>{{ section.settings.section_heading }}</h2>
+         {% endif %}
+       {% if section.settings.section_subheading != blank %}
+      <p>{{ section.settings.section_subheading }}</p>
+      {% endif %}
+    </div>
+    <div class="testimonial-block">
+      {% for block in section.blocks %}
+        <div class="testimonial-conatainer " data-block-id="{{ block.id }}">
+          <div class="testimonial-sub-block">
+            {% if block.settings.image != blank %}
+              <div class="testimonial-image">
+                <img src="{{ block.settings.image | img_url: 'master' }}" alt="{{ block.settings.testimonial_block_heading.alt | escape }}" loading="lazy">
+              </div>
+            {% endif %}
+          </div>
+          <div class="testimonial-sub-block">
+            {% if block.settings.testimonial_block_heading != blank or block.settings.testimonial_block_description != blank %}
+            <div class="testimonial-block-description-heading">
+               {% if block.settings.testimonial_block_heading != blank %}
+                <h2 class="testimonial-block-heading">{{ block.settings.testimonial_block_heading }}</h2>
+               {% endif %}  
+              {% if block.settings.testimonial_block_description != blank %}
+               <p class="testimonial-block-description">{{ block.settings.testimonial_block_description }}</p>
+              </div>
+                {% endif %}
+              {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+
+{% schema %}
+{
+  "name": "Testimonial Section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "section_heading",
+      "label": "Header",
+      "default": "TALES OF EMPOWERMENT"
+    },
+    {
+      "type": "text",
+      "id": "section_subheading",
+      "label": "Subheader"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        {"value": "text-left", "label": "Left"},
+        {"value": "text-center", "label": "Center"},
+        {"value": "text-right", "label": "Right"}
+      ],
+      "default": "text-center"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Testimonial Image"
+        },
+        {
+          "type": "color",
+          "id": "image_bg_color",
+          "label": "Image Background Color"
+        },
+        {
+          "type": "text",
+          "id": "testimonial_block_heading",
+          "label": "Testimonial Heading",
+          "default": "Testimonial Heading"
+        },
+        {
+          "type": "richtext",
+          "id": "testimonial_block_description",
+          "label": "Testimonial Description"
+        },
+        {
+          "type": "color",
+          "id": "description_bg_color",
+          "label": "Description Background Color"
+        },
+        {
+          "type": "color",
+          "id": "description_color",
+          "label": "Description Color"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Testimonial Section",
+      "category": "Testimonial"
+    }
+  ]
+}
+{% endschema %}

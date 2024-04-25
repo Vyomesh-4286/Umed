@@ -1,0 +1,75 @@
+.template-giftcard {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+.template-giftcard .link {
+  text-decoration: underline;
+  text-underline-offset: 0.3rem;
+  text-decoration-thickness: 0.1rem;
+  transition: text-decoration-thickness ease 0.1s;
+}
+@media (hover: hover) {
+  .template-giftcard .link:hover {
+    text-decoration-thickness: 0.2rem;
+  }
+}
+.template-giftcard .gift-card-header .shop-name {
+  font-size: 2.2rem;
+}
+.template-giftcard .gift-card-header .gift-card-heading {
+  font-weight: 400;
+  font-size: 3.5rem;
+}
+.template-giftcard .gift-card-header .gift-card-price {
+  padding: 1rem;
+  font-size: 2rem;
+}
+.template-giftcard .gift-card .gift-card-image-wrapper {
+  margin: 2rem 0;
+}
+.template-giftcard .gift-card .gift-card-qr-code {
+  margin: 3rem 0 1.5rem 0;
+  display: inline-block;
+}
+.template-giftcard .gift-card .gift-card-number {
+  text-align: center;
+  border: 0;
+  box-shadow: none;
+  font-size: 1.8rem;
+  color: rgb(var(--heading-color));
+}
+.template-giftcard .gift-card .gift-card-copy-link {
+  background-color: transparent;
+  border: none;
+}
+.template-giftcard .gift-card .gift-card-copy-success {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.template-giftcard .gift-card .gift-card-copy-success svg {
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-top: -0.4rem;
+  margin-right: 0.5rem;
+}
+.template-giftcard .gift-card .gift-card-buttons {
+  display: flex;
+  flex-direction: column;
+  max-width: 25rem;
+  flex-wrap: wrap;
+  margin: 4rem auto 0 auto;
+}
+@media print {
+  .template-giftcard .gift-card .gift-card-buttons {
+    display: none;
+  }
+}
+.template-giftcard .gift-card .gift-card-buttons .button {
+  letter-spacing: 0.1rem;
+  padding: 1.5rem 3rem;
+}
+.template-giftcard .gift-card .gift-card-buttons .continue-shopping {
+  margin-bottom: 2rem;
+  display: block;
+}

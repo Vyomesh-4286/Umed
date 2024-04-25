@@ -1,0 +1,41 @@
+{%- assign section_id = '#shopify-section-' | append: section.id -%}
+
+<style>
+	{{ section_id }} {
+		min-height: {{ section.settings.height }}px;
+	}
+
+	{%- if section.settings.height_mobile != blank -%}
+		@media (max-width: 720px) {
+			{{ section_id }} {
+				min-height: {{ section.settings.height_mobile }}px;
+			}
+		}
+	{%- endif -%}
+</style>
+
+{% schema %}
+{
+	"name": "t:sections.space.name",
+	"class": "space-section",
+	"tag": "section",
+	"settings": [
+		{
+			"type": "number",
+			"id": "height",
+			"default": 50,
+			"label": "t:sections.space.settings.height.label"
+		},
+		{
+			"type": "number",
+			"id": "height_mobile",
+			"label": "t:sections.space.settings.height_mobile.label"
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.space.presets.name"
+		}
+	]
+}
+{% endschema %}

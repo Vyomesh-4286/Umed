@@ -1,0 +1,95 @@
+{%- liquid
+	assign section_id     = '#shopify-section-' | append: section.id
+	assign layout         = section.settings.layout_products_related
+	assign total          = section.settings.rows_products_related | times: section.settings.columns_products_related
+	assign columns        = section.settings.columns_products_related
+	assign columns_tablet = 3
+	assign columns_mobile = 2
+
+	if columns == 1
+		assign columns_mobile = 1
+		assign columns_tablet = 1
+	elsif columns == 2
+		assign columns_mobile = 2
+		assign columns_tablet = 2
+	endif
+-%}
+
+{%- if product.media.size <= 1 and layout == 'carousel' -%}
+	{{ 'swiper.css' | asset_url | stylesheet_tag }}
+	<script src="{{ 'swiper.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+<style>
+
+</style>
+
+<div class="product-recommendations" data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ total }}">
+	{%- if recommendations.performed and recommendations.products_count > 0 -%}
+		{%- if section.settings.title_products_related != blank -%}
+			<h2 class="title">{{- section.settings.title_products_related | escape -}}</h2>
+		{%- endif -%}
+
+		{%- if layout == 'carousel' -%}
+			<div class="carousel-swiper">
+				<template data-options>
+					{
+						"slidesPerView": {{ columns_mobile }},
+						"autoplay": {
+							"delay": 5000
+						},
+						"navigation": {
+							"nextEl": "{{ section_id }} .swiper-button-next",
+							"prevEl": "{{ section_id }} .swiper-button-prev"
+						},
+						"pagination": {
+							"el": "{{ section_id }} .swiper-pagination",
+							"type": "bullets",
+							"clickable": true
+						},
+						"breakpoints": {
+							"768": {
+								"slidesPerView": {{ columns_tablet }}
+							},
+							"992": {
+								"slidesPerView": {{ columns }}
+							}
+						},
+						"spaceBetween": 30
+					}
+				</template>
+
+				<div class="swiper">
+		{%- endif -%}
+
+			<ul class="{% if layout == 'grid' %}grid grid-{{ section.settings.columns_products_related }} grid-tablet-3 grid-mobile-2{% else %}swiper-wrapper{% endif %}" role="list">
+				{%- for product in recommendations.products limit: total -%}
+					<li class="{% if layout == 'grid' %}grid-item{% else %}swiper-slide{% endif %}">
+						{%- render 'product-card', product: product -%}
+					</li>
+				{%- else -%}
+					{%- for i in (1..4) -%}
+						{%- liquid
+							capture index
+								cycle 1, 2, 3, 4, 5, 6
+							endcapture
+						-%}
+
+						<li class="{% if layout == 'grid' %}grid-item{% else %}swiper-slide{% endif %}">
+							{%- render 'product-card-placeholder', index: index -%}
+						</li>
+					{%- endfor -%}
+				{%- endfor -%}
+			</ul>
+
+		{%- if layout == 'carousel' -%}
+				</div>{% comment %} .swiper {% endcomment %}
+
+				<div class="swiper-button-prev">{%- render 'icon', code: 'chevron-left' -%}</div>
+				<div class="swiper-button-next">{%- render 'icon', code: 'chevron-right' -%}</div>
+				<div class="swiper-pagination"></div>
+
+			</div>{% comment %} .carousel-swiper {% endcomment %}
+		{%- endif -%}
+	{%- endif -%}
+</div>

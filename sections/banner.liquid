@@ -1,0 +1,299 @@
+{%- liquid
+	assign section_id = '#shopify-section-' | append: section.id
+	assign full       = section.settings.full
+	assign src_tag    = 'src'
+
+	if settings.image_animation
+		assign src_tag = 'data-src'
+	endif
+-%}
+
+<div class="{% if full %}stretch-section{% else %}container{% endif %}">	
+	<div class="section-banner grid grid-{{ section.settings.col_destop }} grid-tablet-2 grid-mobile-1" role="list">
+		{%- for block in section.blocks -%}
+			<div class="grid-item" {{ block.shopify_attributes }} data-{{ block.id }}>
+				<div class="banner-item">
+					{%- case block.type -%}
+						{%- when '@app' -%}
+							{%- render block -%}
+						{%- when 'item-banner' -%}
+							<a href="{{ block.settings.url_banner }}" class="umed-banner-link"></a>
+
+							{%- assign img_banner = block.settings.img_banner -%}
+
+							<div class="image-banner">
+                              <div class="image-banner-img">
+								{%- if img_banner != blank -%}
+									<img {% if settings.image_animation %}class="lazy-image" data-delay="{{ forloop.index | times: 0.15 }}s"{% endif %}
+										{{ src_tag }}="{{ img_banner | image_url: width: 768 }}"
+										alt="{{ img_banner.alt | escape }}"
+										loading="lazy"
+										width="{{ img_banner.width }}"
+										height="{{ img_banner.height }}">
+								{%- else -%}
+									{%- render 'icon', code: 'placeholder' -%}
+								{%- endif -%}
+                              </div>
+
+								<div class="content-banner">
+									{% if block.settings.title_banner != blank %}
+										<h4 class="umed-banner-title">{{ block.settings.title_banner }}</h4>
+									{% endif %}
+
+									{% if block.settings.btn_name != blank %}
+										<div class="button-name">
+											<a href="{{ block.settings.url_banner }}">
+												<span class="button-text">{{ block.settings.btn_name }}</span>
+												<span class="button-icon">{% render 'icon', code: 'arrow-right' %}</span>
+											</a>
+										</div>
+									{% endif %}
+								</div>
+							</div>
+					{%- endcase -%}
+				</div>
+			</div>
+		{%- endfor -%}
+	</div>
+</div>
+
+<style>
+	{{ section_id }} {
+		padding-top: {{ section.settings.padding_top_mobile }}px;
+		padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+	}
+
+	@media (min-width: 768px) {
+		{{ section_id }} {
+			padding-top: {{ section.settings.padding_top }}px;
+			padding-bottom: {{ section.settings.padding_bottom }}px;
+		}
+	}
+
+	{%- for block in section.blocks -%}
+
+		{{ section_id }} [data-{{ block.id }}] .content-banner .umed-banner-title {
+			{%- if block.settings.size_title_banner > 0 -%}
+				font-size: {{ block.settings.size_title_banner }}px;
+			{%- endif -%}
+			{% if block.settings.color_title_banner != blank %}
+				color: {{ block.settings.color_title_banner }};
+			{%- endif -%}
+		}
+
+		{% if block.settings.btn_color != blank %}
+			{{ section_id }} [data-{{ block.id }}] .button-name a svg{
+				fill:  {{ block.settings.btn_color }};
+			}
+			{{ section_id }} [data-{{ block.id }}] .button-name a{
+				color:  {{ block.settings.btn_color }};
+			}
+		{%- endif -%}
+
+		{% if block.settings.btn_bgcolor != blank %}
+			{{ section_id }} [data-{{ block.id }}] .button-name a{
+				background-color: {{ block.settings.btn_bgcolor }};
+			}
+		{%- endif -%}
+
+		{% if block.settings.btn_color_hover != blank %}
+			{{ section_id }} [data-{{ block.id }}] .button-name a:hover {
+				color:  {{ block.settings.btn_color_hover }};
+			}
+			{{ section_id }} [data-{{ block.id }}] .button-name a:hover svg{
+				fill:  {{ block.settings.btn_color_hover }};
+			}
+		{%- endif -%}
+
+		{% if block.settings.btn_bgcolor_hover != blank %}
+			{{ section_id }} [data-{{ block.id }}] .button-name a:hover {
+				background-color: {{ block.settings.btn_bgcolor_hover }};
+			}
+		{%- endif -%}
+
+		{{ section_id }} [data-{{ block.id }}] .button-name .button-text {
+			{%- if block.settings.size_button_banner > 0 -%}
+				font-size: {{ block.settings.size_button_banner }}px;
+			{%- endif -%}
+		}
+
+      {{ section_id }} [data-{{ block.id }}] .banner-item {
+        background-color: {{ block.settings.block_bg_color }};
+    }
+
+
+
+	{%- endfor -%}
+
+</style>
+
+{% schema %}
+{
+	"name": "t:sections.banner.name",
+	"tag": "section",
+	"class": "banner-section",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "full",
+			"default": false,
+			"label": "t:general.layout.full.label"
+		},
+		{
+			"type": "range",
+			"id": "col_destop",
+			"min": 1,
+			"max": 4,
+			"step": 1,
+			"default": 3,
+			"label": "t:sections.banner.settings.col_destop.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"blocks": [
+		{
+			"type": "item-banner",
+			"name": "t:sections.banner.blocks.item-banner.name",
+			"settings": [
+				{
+					"type":"image_picker",
+					"id":"img_banner",
+					"label": "t:sections.banner.blocks.item-banner.settings.img_banner.label"
+				},
+				{
+					"type": "url",
+					"id": "url_banner",
+					"default": "/collections/all",
+					"label": "t:sections.banner.blocks.item-banner.settings.url_banner.label"
+				},
+				{
+					"type": "textarea",
+					"id": "title_banner",
+					"default": "Everyday Fresh & Clean with Our Products",
+					"label": "t:sections.banner.blocks.item-banner.settings.title_banner.label"
+				},
+				{
+					"type": "range",
+					"id": "size_title_banner",
+					"min": 10,
+					"max": 100,
+					"step": 1,
+					"default": 24,
+					"label": "t:sections.banner.blocks.item-banner.settings.size_subtitle_banner.label"
+				},
+				{
+					"type": "color",
+					"id": "color_title_banner",
+					"default": "#253D4E",
+					"label": "t:sections.banner.blocks.item-banner.settings.color_subtitle_banner.label"
+				},
+                {
+                  "type":"color",
+                  "id":"block_bg_color",
+                  "label":"Background Color"
+                },
+				{
+					"type": "text",
+					"id": "btn_name",
+					"default": "Shop Now",
+					"label": "t:sections.banner.blocks.item-banner.settings.btn_name.label"
+				},
+				{
+					"type": "range",
+					"id": "size_button_banner",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 12,
+					"label": "t:sections.banner.blocks.item-banner.settings.size_button_banner.label"
+				},
+				{
+					"type": "color",
+					"id": "btn_color",
+					"default": "#fff",
+					"label": "t:sections.banner.blocks.item-banner.settings.btn_color.label"
+				},
+				{
+					"type": "color",
+					"id": "btn_color_hover",
+					"default": "#fff",
+					"label": "t:sections.banner.blocks.item-banner.settings.btn_color_hover.label"
+				},
+				{
+					"type": "color",
+					"id": "btn_bgcolor",
+					"default": "#3BB77E",
+					"label": "t:sections.banner.blocks.item-banner.settings.btn_bgcolor.label"
+				},
+				{
+					"type": "color",
+					"id": "btn_bgcolor_hover",
+					"default": "#FDC040",
+					"label": "t:sections.banner.blocks.item-banner.settings.btn_bgcolor_hover.label"
+				}
+			]
+		},
+
+		{
+			"type": "@app"
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.banner.presets.name",
+			"blocks": [
+				{
+					"type": "item-banner"
+				}
+			]
+		}
+	]
+}
+{% endschema %}

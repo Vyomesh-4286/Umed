@@ -1,0 +1,88 @@
+<ul class="{{ class }}" data-level="1">
+	{%- for link in menu -%}
+		{%- liquid
+			assign menu_class = 'menu-item'
+
+			capture mega_menu
+				render 'mega-menu', link: link
+			endcapture
+			assign mega_menu = mega_menu | strip
+
+			if mega_menu != blank
+				assign menu_class = menu_class | append: ' mega-item'
+			endif	
+
+			if link.current
+				assign menu_class = menu_class | append: ' current-menu'
+			endif
+
+			if link.child_active
+				assign menu_class = menu_class | append: ' current-parent-menu'
+			endif								
+		-%}
+
+		<li class="{{ menu_class }}">
+			<a href="{{ link.url }}" class="menu-link{% if link.links != blank or mega_menu != blank %} has-children{% endif %}">
+				{%- liquid
+					assign menu_icon = link.title | strip | split: '[' | last | remove: ']'
+
+					capture has_icon
+						render 'icon', code: menu_icon
+					endcapture
+				-%}
+
+				{%- if has_icon != blank -%}
+					<span class="icon icon-{{ menu_icon | handle }}">{{- has_icon -}}</span>
+				{%- endif -%}
+
+				<span class="menu-text">{{ link.title | escape | split: '[' | first }}</span>
+
+				{%- if link.links != blank or mega_menu != blank -%}
+				<span class="menu-arrow">{% render 'icon', code: 'chevron-down' %}</span>
+				{%- endif -%}
+			</a>
+
+			{% comment %} Check mega menu first {% endcomment %}
+			{%- if mega_menu != blank -%}
+				{{ mega_menu }}
+			{% comment %} Then check sub menu {% endcomment %}
+			{%- elsif link.links != blank -%}
+				<ul class="sub-menu" data-level="2">
+					<li class="back">
+						{%- render 'icon', code: 'chevron-left' -%}
+						{{- 'general.text.back' | t -}}
+					</li>
+
+					{%- for level_two in link.links -%}
+						<li class="menu-item{% if level_two.current %} current-menu{% endif %}">
+							<a href="{{ level_two.url }}" class="menu-link{% if level_two.links != blank %} has-children{% endif %}">
+								<span class="menu-text">{{ level_two.title | escape }}</span>
+
+								{%- if level_two.links != blank -%}
+								<span class="menu-arrow">{% render 'icon', code: 'chevron-down' %}</span>
+								{%- endif -%}
+							</a>
+
+							{%- if level_two.links != blank -%}
+								<ul class="sub-menu" data-level="3">
+									<li class="back">
+										{%- render 'icon', code: 'chevron-left' -%}
+										{{- 'general.text.back' | t -}}
+									</li>
+
+									{%- for level_three in level_two.links -%}
+										<li class="menu-item{% if level_three.current %} current-menu{% endif %}">
+											<a href="{{ level_three.url }}" class="menu-link">
+												<span class="menu-text">{{ level_three.title | escape }}</span>
+											</a>
+										</li>
+									{%- endfor -%}
+								</ul>
+							{%- endif -%}
+						</li>
+					{%- endfor -%}
+				</ul>
+			{%- endif -%}
+		</li>
+	{%- endfor -%}
+</ul>

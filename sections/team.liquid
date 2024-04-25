@@ -1,0 +1,584 @@
+{%- liquid
+  assign section_id = '#shopify-section-' | append: section.id
+  assign full = section.settings.full
+-%}
+
+<style>
+  {{ section_id }} {
+  	padding-top: {{ section.settings.padding_top_mobile }}px;
+  	padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+  	background-color: {{ section.settings.bg_color }};
+  	margin-top: {{ section.settings.margin_top_mobile }}px;
+  	margin-bottom: {{ section.settings.margin_bottom_mobile }}px;
+
+  	{%- if section.settings.bg_image != blank -%}
+  		background-image: url({{ section.settings.bg_image | image_url: width: 1920 }});
+  		background-size: 100% 100%;
+  		background-repeat: no-repeat;
+  		background-position: center;
+  	{%- endif -%}
+  }
+
+  {{ section_id }} .title-wrapper .title {
+  	font-size: {{ section.settings.title_size | times: 0.85 }}px;
+  }
+
+  @media (min-width: 768px) {
+  	{{ section_id }} {
+  		padding-top: {{ section.settings.padding_top }}px;
+  		padding-bottom: {{ section.settings.padding_bottom }}px;
+  		margin-top: {{ section.settings.margin_top }}px;
+  		margin-bottom: {{ section.settings.margin_bottom }}px;
+  	}
+
+  	{{ section_id }} .title-wrapper .title {
+  		font-size: {{ section.settings.title_size }}px;
+  	}
+  }
+
+  {%- for block in section.blocks -%}
+  	{%- case block.type -%}
+  		{%- when 'team_text' -%}
+  			{{ section_id }} [data-{{ block.id }}]  .team-text .text-brand {
+  				{%- if block.settings.size_subtitle_team > 0 -%}
+  					font-size: {{ block.settings.size_subtitle_team }}px;
+  				{%- endif -%}
+
+  				{% if block.settings.color_subtitle_team != blank %}
+  					color:  {{ block.settings.color_subtitle_team }};
+  				{%- endif -%}
+  			}
+
+  			{{ section_id }} [data-{{ block.id }}] .team-text .umed-team-title {
+  				{%- if block.settings.size_title_team > 0 -%}
+  					font-size: {{ block.settings.size_title_team }}px;
+  				{%- endif -%}
+
+  				{% if block.settings.color_title_team != blank %}
+  					color:  {{ block.settings.color_title_team }};
+  				{%- endif -%}
+  			}
+
+  			{{ section_id }} [data-{{ block.id }}] .team-text .umed-team-description {
+  				{%- if block.settings.size_description_team > 0 -%}
+  					font-size: {{ block.settings.size_description_team }}px;
+  				{%- endif -%}
+
+  				{% if block.settings.color_description_team != blank %}
+  					color:  {{ block.settings.color_description_team }};
+  				{%- endif -%}
+  			}
+
+  			{% if block.settings.btn_color != blank %}
+  				{{ section_id }} [data-{{ block.id }}] .button-name {
+  					color:  {{ block.settings.btn_color }};
+  				}
+  			{%- endif -%}
+
+  			{% if block.settings.btn_bgcolor != blank %}
+  				{{ section_id }} [data-{{ block.id }}] .button-name {
+  					background-color: {{ block.settings.btn_bgcolor }};
+  				}
+  			{%- endif -%}
+
+  			{% if block.settings.btn_color_hover != blank %}
+  				{{ section_id }} [data-{{ block.id }}] .button-name:hover {
+  					color:  {{ block.settings.btn_color_hover }};
+  				}
+  			{%- endif -%}
+
+  			{% if block.settings.btn_bgcolor_hover != blank %}
+  				{{ section_id }}  [data-{{ block.id }}] .button-name:hover {
+  					background-color: {{ block.settings.btn_bgcolor_hover }};
+  				}
+  			{%- endif -%}
+
+  			{%- when 'team_image' -%}
+
+  			{{ section_id }} [data-{{ block.id }}] .team-image .title-team-image {
+  				{%- if block.settings.size_title_team_img > 0 -%}
+  					font-size: {{ block.settings.size_title_team_img }}px;
+  				{%- endif -%}
+
+  				{% if block.settings.color_title_team != blank %}
+  					color:  {{ block.settings.color_title_team }};
+  				{%- endif -%}
+  			}
+
+  			{{ section_id }} [data-{{ block.id }}] .team-image .description-team-image {
+  				{%- if block.settings.size_description_team_img > 0 -%}
+  					font-size: {{ block.settings.size_description_team_img }}px;
+  				{%- endif -%}
+
+  				{% if block.settings.color_subtitle_team != blank %}
+  					color:  {{ block.settings.color_subtitle_team }};
+  				{%- endif -%}
+  			}
+  	{% endcase %}
+
+  {%- endfor -%}
+</style>
+
+<section class="{% if full %}stretch-section{% else %}container{% endif %}">
+  {% unless full %}
+    <div class="col-xl-10 col-lg-12 m-auto">
+  {% endunless %}
+  {%- if section.settings.title != blank -%}
+    <div class="title-wrapper text-center">
+      <h2 class="title">{{- section.settings.title | escape -}}</h2>
+      {%- if section.settings.icon != blank or section.settings.svg != blank -%}
+        <span class="heading-icon">
+          {%- liquid
+            if section.settings.svg != blank
+              echo section.settings.svg
+            elsif section.settings.icon != blank
+              echo section.settings.icon | image_url: width: section.settings.icon.width, height: section.settings.icon.height | image_tag: loading: 'lazy'
+            endif
+          -%}
+        </span>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <div
+    class="team-content grid grid-{{ section.settings.col_destop }} grid-tablet-{{ section.settings.col_tablet }} grid-mobile-1"
+    role="list"
+  >
+    {%- for block in section.blocks -%}
+      <div class="grid-item">
+        <div
+          class="team-block-item block-{{ block.type | replace: '_', '-' }}"
+          {{ block.shopify_attributes }}
+          data-{{ block.id }}
+        >
+          {%- case block.type -%}
+            {%- when '@app' -%}
+              {%- render block -%}
+
+            {%- when 'team_text' -%}
+              <div class="team-text" data-id="{{ block.id }}">
+                {% if block.settings.subtitle_team != blank %}
+                  <h6 class="text-brand">{{ block.settings.subtitle_team }}</h6>
+                {% endif %}
+
+                {% if block.settings.title_team != blank %}
+                  <h1 class="umed-team-title">{{ block.settings.title_team }}</h1>
+                {% endif %}
+
+                {% if block.settings.description_team != blank %}
+                  <p class="umed-team-description">{{ block.settings.description_team }}</p>
+                  <p class="umed-team-description">{{ block.settings.description_team }}</p>
+                {% endif %}
+
+                {% if block.settings.btn_name != blank %}
+                  <a href="{{ block.settings.url_team }}" class="button-name">{{ block.settings.btn_name }}</a>
+                {% endif %}
+              </div>
+
+            {%- when 'team_image' -%}
+              <div class="team-image">
+                {% if block.settings.team_image != blank %}
+                  {{ block.settings.team_image | image_url: width: 423 | image_tag: loading: 'lazy' }}
+                {% else %}
+                  {%- render 'icon', code: 'placeholder' -%}
+                {% endif %}
+                <div class="team-image-text">
+                  {% if block.settings.title_team_img != blank %}
+                    <h4 class="title-team-image">{{ block.settings.title_team_img }}</h4>
+                  {% endif %}
+
+                  {% if block.settings.description_team_img != blank %}
+                    <span class="description-team-image">{{ block.settings.description_team_img }}</span>
+                  {% endif %}
+
+                  <div class="image-icons">
+                    {% if block.settings.facebook_url != blank %}
+                      <a href="{{ block.settings.facebook_url }}" class="image-icon facebook">
+                        {%- render 'icon', code: 'facebook' -%}
+                      </a>
+                    {% endif %}
+                    {% if block.settings.twitter_url != blank %}
+                      <a href="{{ block.settings.twitter_url }}" class="image-icon twitter">
+                        {% render 'icon', code: 'twitter' %}
+                      </a>
+                    {% endif %}
+                    {% if block.settings.instagram_url != blank %}
+                      <a href="{{ block.settings.instagram_url }}" class="image-icon instagram">
+                        {%- render 'icon', code: 'instagram' -%}
+                      </a>
+                    {% endif %}
+                    {% if block.settings.youtube_url != blank %}
+                      <a href="{{ block.settings.youtube_url }}" class="image-icon youtube">
+                        {%- render 'icon', code: 'youtube' -%}
+                      </a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+          {% endcase %}
+        </div>
+      </div>
+    {%- endfor -%}
+  </div>
+  {% unless full %}
+    </div>
+  {% endunless %}
+</section>
+
+{% schema %}
+{
+	"name": "t:sections.team.name",
+	"class": "team-section",
+	"settings": [
+	{
+		"type": "checkbox",
+		"id": "full",
+		"default": false,
+		"label": "t:sections.team.settings.full.label"
+	},
+		{
+			"type": "header",
+			"content": "t:sections.team.settings.header_title.content"
+		},
+		{
+			"type": "text",
+			"id": "title",
+			"default": "Our Team",
+			"label": "t:sections.team.settings.title.label"
+		},
+		{
+			"type": "range",
+			"id": "title_size",
+			"min": 10,
+			"max": 110,
+			"step":1,
+			"default": 40,
+			"unit": "px",
+			"label": "t:sections.team.settings.title_size.label"
+		},
+		{
+			"type": "image_picker",
+			"id": "icon",
+			"label": "t:sections.team.settings.icon.label"
+		},
+		{
+			"type": "textarea",
+			"id": "svg",
+			"label": "t:sections.team.settings.svg.label"
+		},
+		{
+			"type": "range",
+			"id": "col_destop",
+			"label": "t:sections.team.settings.col_destop.label",
+			"min": 1,
+			"max": 6,
+			"step": 1,
+			"default": 3
+		},
+		{
+			"type": "range",
+			"id": "col_tablet",
+			"label": "t:sections.team.settings.col_tablet.label",
+			"min": 1,
+			"max": 6,
+			"step": 1,
+			"default": 3
+		},
+		{
+			"type": "header",
+			"content": "t:general.margin.header_margin.content"
+		},
+		{
+			"type": "range",
+			"id": "margin_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.margin.margin_top.label"
+		},
+		{
+			"type": "range",
+			"id": "margin_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.margin.margin_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.margin.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "margin_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.margin.margin_top.label"
+		},
+		{
+			"type": "range",
+			"id": "margin_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.margin.margin_bottom.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "team_text",
+			"name": "t:sections.team.blocks.team_text.name",
+			"settings": [
+				{
+					"type": "textarea",
+					"id": "subtitle_team",
+					"default": "Our Team",
+					"label": "t:sections.team.blocks.team_text.settings.subtitle_team.label"
+				},
+				{
+					"type": "range",
+					"id": "size_subtitle_team",
+					"min": 10,
+					"max": 40,
+					"step": 1,
+					"default": 16,
+					"label": "t:sections.team.blocks.team_text.settings.size_subtitle_team.label"
+				},
+				{
+					"type": "color",
+					"id": "color_subtitle_team",
+					"default": "#3BB77E",
+					"label": "t:sections.team.blocks.team_text.settings.color_subtitle_team.label"
+				},
+				{
+					"type": "textarea",
+					"id": "title_team",
+					"default": "Meet Our Expert Team",
+					"label": "t:sections.team.blocks.team_text.settings.title_team.label"
+				},
+				{
+					"type": "range",
+					"id": "size_title_team",
+					"min": 10,
+					"max": 100,
+					"step": 1,
+					"default": 48,
+					"label": "t:sections.team.blocks.team_text.settings.size_subtitle_team.label"
+				},
+				{
+					"type": "color",
+					"id": "color_title_team",
+					"label": "t:sections.team.blocks.team_text.settings.color_subtitle_team.label"
+				},
+				{
+					"type": "textarea",
+					"id": "description_team",
+					"default": "Proin ullamcorper pretium orci. Donec necscele risque leo. Nam massa dolor imperdiet neccon sequata congue idsem. Maecenas malesuada faucibus finibus.",
+					"label": "t:sections.team.blocks.team_text.settings.description_team.label"
+				},
+				{
+					"type": "range",
+					"id": "size_description_team",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 16,
+					"label": "t:sections.team.blocks.team_text.settings.size_subtitle_team.label"
+				},
+				{
+					"type": "color",
+					"id": "color_description_team",
+					"label": "t:sections.team.blocks.team_text.settings.color_subtitle_team.label"
+				},
+				{
+					"type": "text",
+					"id": "btn_name",
+					"default": "View All Members",
+					"label": "t:sections.team.blocks.team_text.settings.btn_name.label"
+				},
+				{
+					"type": "url",
+					"id": "url_team",
+					"label": "t:sections.team.blocks.team_text.settings.url_team.label"
+				},
+				{
+					"type": "color",
+					"id": "btn_color",
+					"default": "#fff",
+					"label": "t:sections.team.blocks.team_text.settings.btn_color.label"
+				},
+				{
+					"type": "color",
+					"id": "btn_color_hover",
+					"default": "#fff",
+					"label": "t:sections.team.blocks.team_text.settings.btn_color_hover.label"
+				},
+				{
+					"type": "color",
+					"id": "btn_bgcolor",
+					"default": "#3BB77E",
+					"label": "t:sections.team.blocks.team_text.settings.btn_bgcolor.label"
+				},
+				{
+					"type": "color",
+					"id": "btn_bgcolor_hover",
+					"default": "#FDC040",
+					"label": "t:sections.team.blocks.team_text.settings.btn_bgcolor_hover.label"
+				}
+			]
+		},
+		{
+			"type": "team_image",
+			"name": "t:sections.team.blocks.team_image.name",
+			"settings": [
+				{
+					"type": "image_picker",
+					"id": "team_image",
+					"label": "t:sections.team.blocks.team_image.settings.team_image.label"
+				},
+				{
+					"type":"textarea",
+					"id": "title_team_img",
+					"default": "H. Merinda",
+					"label": "t:sections.team.blocks.team_image.settings.title_team_img.label"
+				},
+				{
+					"type": "range",
+					"id": "size_title_team_img",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 24,
+					"label": "t:sections.team.blocks.team_image.settings.size_title_team_img.label"
+				},
+				{
+					"type": "color",
+					"id": "color_title_team",
+					"label": "t:sections.team.blocks.team_image.settings.color_title_team.label"
+				},
+				{
+					"type": "textarea",
+					"id": "description_team_img",
+					"default": "CEO & Co-Founder",
+					"label": "t:sections.team.blocks.team_image.settings.description_team_img.label"
+				},
+				{
+					"type": "range",
+					"id": "size_description_team_img",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 17,
+					"label": "t:sections.team.blocks.team_image.settings.size_description_team_img.label"
+				},
+				{
+					"type": "color",
+					"id": "color_subtitle_team",
+					"label": "t:sections.team.blocks.team_text.settings.color_subtitle_team.label"
+				},
+				{
+					"type": "header",
+					"content": "t:sections.team.blocks.team_image.settings.header_title.content"
+
+				},
+				{
+					"type": "url",
+					"id": "facebook_url",
+					"label": "t:sections.team.blocks.team_image.settings.facebook_url.label"
+				},
+				{
+					"type": "url",
+					"id": "twitter_url",
+					"label": "t:sections.team.blocks.team_image.settings.twitter_url.label"
+				},
+				{
+					"type": "url",
+					"id": "instagram_url",
+					"label": "t:sections.team.blocks.team_image.settings.instagram_url.label"
+				},
+				{
+					"type": "url",
+					"id": "youtube_url",
+					"label": "t:sections.team.blocks.team_image.settings.youtube_url.label"
+				}
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.team.presets.name",
+			"blocks": [
+				{
+					"type": "team_text"
+				},
+				{
+					"type": "team_image"
+				},
+				{
+					"type": "team_image"
+				}
+			]
+		}
+	]
+}
+{% endschema %}

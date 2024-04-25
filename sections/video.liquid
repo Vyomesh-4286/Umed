@@ -1,0 +1,144 @@
+{%- liquid
+	assign section_id = '#shopify-section-' | append: section.id
+	assign full       = section.settings.full
+-%}
+
+<style>
+	{{ section_id }} {
+		padding-top: {{ section.settings.padding_top_mobile }}px;
+		padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+	}
+
+	@media (min-width: 768px) {
+		{{ section_id }} {
+			padding-top: {{ section.settings.padding_top }}px;
+			padding-bottom: {{ section.settings.padding_bottom }}px;
+		}
+	}
+
+	{%- if section.settings.height > 0 -%}
+		{%- if section.settings.height_mobile > 0 -%}
+			{{ section_id }} .video-item {
+				height: {{ section.settings.height_mobile }}px;
+			}
+		{%- endif -%}
+
+		@media (min-width: 768px) {
+			{{ section_id }} .video-item {
+				height: {{ section.settings.height }}px;
+			}
+		}
+	{%- endif -%}
+</style>
+
+<div class="{% if full %}stretch-section{% else %}container{% endif %}">
+	<div class="video-item">
+		{% if section.settings.url.type == 'youtube' %}
+			<iframe data-src="https://www.youtube.com/embed/{{ section.settings.url.id }}?autoplay=1&showinfo=0&controls=1&rel=0&modestbranding=1" frameborder="0" allowfullscreen></iframe>
+		{% elsif section.settings.url.type == 'vimeo' %}
+			<iframe data-src="https://player.vimeo.com/video/{{ section.settings.url.id }}?autoplay=1&portrait=0&byline=0&color={{ settings.accent_color | remove_first: '#' }}" frameborder="0"></iframe>
+		{% endif %}
+
+		<span class="play-video">{% render 'icon', code: 'play' %}</span>
+
+		<div class="video-image-wrapper">
+			{%- if section.settings.image -%}
+				{{ section.settings.image | image_url: width: 2100 | image_tag: loading: 'lazy' }}
+			{%- else -%}
+				{{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+			{%- endif -%}
+		</div>
+	</div>
+</div>
+
+{% schema %}
+{
+	"name": "t:sections.video.name",
+	"tag": "section",
+	"class": "video-section",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "full",
+			"label": "t:sections.video.settings.full.label",
+			"default": false
+		},
+		{
+			"type": "number",
+			"id": "height",
+			"label": "t:sections.video.settings.height.label",
+			"default": 500
+		},
+		{
+			"type": "number",
+			"id": "height_mobile",
+			"label": "t:sections.video.settings.height_mobile.label"
+		},
+		{
+			"type": "video_url",
+			"id": "url",
+			"accept": ["vimeo", "youtube"],
+			"label": "t:sections.video.settings.url.label",
+			"default": "https://www.youtube.com/watch?v=_9VUPq3SxOc"
+		},
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "t:sections.video.settings.image.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 0,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 0,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.video.presets.name"
+		}
+	]
+}
+{% endschema %}

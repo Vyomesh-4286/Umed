@@ -1,0 +1,265 @@
+{% comment %}
+		Renders a product card
+
+		Accepts:
+		- product: {Object} Product Liquid object (optional)
+
+		Usage:
+		{% render 'product-item-list-collection' %}
+{% endcomment %}
+
+{%- liquid
+	if product.featured_media and product.media[1] != nil and settings.card_image_hover_effect != 'none'
+		assign image_effect = settings.card_image_hover_effect | prepend: ' hover-'
+	endif
+
+	if settings.card_image_overlay
+		assign image_overlay = ' has-overlay'
+	endif
+
+	if settings.image_animation
+		assign image_animation = ' lazy-image'
+	endif
+
+	assign src_tag = 'src'
+	if settings.image_animation
+		assign src_tag = 'data-src'
+	endif
+-%}
+
+{% comment %} Swatches {% endcomment %}
+{%- capture product_swatches -%}
+	{%- if settings.card_show_swatches and product.has_only_default_variant == false and product.options.size > 0 -%}
+		{%- assign swatch = settings.card_swatch_type -%}
+
+		{%- for option in product.options_with_values -%}
+			{%- liquid
+				assign name           = option.name | downcase
+				assign have_color     = false
+				assign variant_option = 'option' | append: forloop.index
+
+				if name == 'color' or name == 'colour'
+					assign have_color = forloop.index0
+				endif
+			-%}
+
+			{%- if have_color != false -%}
+				<div class="product-swatches swatch-{{ swatch }} swatch-{{ settings.card_swatch_style }}" data-url="{{ product.url }}">
+					{%- for value in option.values -%}
+						{%- liquid
+							assign variant    = product.variants[ forloop.index0 ]
+							assign meta_color = variant.metafields.color.value
+
+							capture color
+								if meta_color
+									echo meta_color
+								else
+									echo value | handle | remove: '-'
+								endif
+							endcapture
+
+							for variant in product.variants
+								if variant[variant_option] == value
+									assign variant_for_value = variant
+									break
+								endif
+							endfor
+						-%}
+
+						{%- if swatch == 'color' -%}
+							<a class="swatch" href="{{ variant_for_value.url | within: collection }}" style="background-color: {{ color }};" data-key="{{ variant_for_value.featured_image.src | handle | append: '-grid' }}" data-src="{{ variant_for_value.featured_media | image_url: width: 768 }}">
+								<span class="sr-only">{{- value -}}</span>
+								<span class="swatch-tooltip">{{- value -}}</span>
+							</a>
+						{%- else -%}
+							<a class="swatch" href="{{ variant_for_value.url | within: collection }}" data-key="{{ variant_for_value.featured_image.src | handle | append: '-grid' }}" data-src="{{ variant_for_value.featured_media | image_url: width: 768 }}">
+								<span class="sr-only">{{- value -}}</span>
+								<span class="swatch-tooltip">{{- value -}}</span>
+								{{- variant_for_value.featured_media | image_url: width: 200, height: 200, crop: 'center' | image_tag: loading: 'lazy' -}}
+							</a>
+						{%- endif -%}
+					{%- endfor -%}
+				</div>
+			{%- endif -%}
+		{%- endfor -%}
+	{%- endif -%}
+{%- endcapture -%}
+
+{% comment %} Add to cart {% endcomment %}
+{%- capture product_add_to_cart -%}
+	{%- form 'product', product, class: 'form-add-to-cart', novalidate: 'novalidate', data-type: 'add-to-cart-form', id: nil -%}
+		<input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+
+		{%- if product.available -%}
+			{%- if product.variants.size == 1 -%}
+				<button type="submit" name="add" class="add-to-cart-button">
+					{%- render 'icon', code: 'cart' -%}
+					{{- 'products.product.add_to_cart_item2' | t -}}
+				</button>
+			{%- else -%}
+				<a href="{{ product.url }}" class="add-to-cart-button">{{- 'products.product.view_options' | t -}}</a>
+			{%- endif -%}
+		{%- else -%}
+			<button type="submit" name="add" class="add-to-cart-button" disabled>
+				{{- 'products.product.sold_out' | t -}}
+			</button>
+		{%- endif -%}
+	{%- endform -%}
+{%- endcapture -%}
+
+{% comment %} Label new product {% endcomment %}
+{% assign product_label_new = false %}
+{% capture _time %} {{ settings.product_new_time | times : 86400 }} {% endcapture %}
+{%- liquid
+	assign time = _time | plus : 0
+	assign now = 'now' | date: '%s' | plus : 0
+-%}
+{% capture _value %} {{ product.published_at | date: "%s" | plus : time }} {% endcapture %}
+{%- liquid
+	assign value = _value | plus : 0
+	if now < value
+		assign product_label_new = true
+	endif
+-%}
+
+<div class="product-item-list-collection product-card text-{{ alignment | default: 'left' }}">
+	<div class="box-img-product">
+		<div class="border-radius-theme product-image-wrap {{ settings.card_image_ratio }}-media{{ image_effect }}{{ image_overlay }}" tabindex="-1">
+			<a href="{{ product.url | split: '?' | first }}" class="product-list-url">
+				
+			{% comment %} Image {% endcomment %}
+				{%- if product.featured_media -%}
+					<img class="product-image{{ image_animation }}"
+						{% if settings.image_animation and cycle %}data-delay="{{ cycle | times: 0.15 }}s"{% endif %}
+						srcset="{%- if product.featured_media.width >= 165 -%}{{ product.featured_media | image_url: width: 165 }} 165w,{%- endif -%}
+							{%- if product.featured_media.width >= 360 -%}{{ product.featured_media | image_url: width: 360 }} 360w,{%- endif -%}
+							{%- if product.featured_media.width >= 533 -%}{{ product.featured_media | image_url: width: 533 }} 533w,{%- endif -%}
+							{%- if product.featured_media.width >= 720 -%}{{ product.featured_media | image_url: width: 720 }} 720w,{%- endif -%}
+							{%- if product.featured_media.width >= 940 -%}{{ product.featured_media | image_url: width: 940 }} 940w,{%- endif -%}
+							{%- if product.featured_media.width >= 1066 -%}{{ product.featured_media | image_url: width: 1066 }} 1066w{%- endif -%}"
+						{{ src_tag }}="{{ product.featured_media | image_url: width: 1066 }}"
+						sizes="(min-width: {{ settings.screen_lg }}px) {{ settings.screen_lg | minus: 130 | divided_by: 4 }}px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
+						data-key="{{ product.featured_media.src | handle | append: '-grid' }}"
+						alt="{{ product.featured_media.alt | escape }}"
+						loading="lazy"
+						width="{{ product.featured_media.width }}"
+						height="{{ product.featured_media.height }}">
+
+					{%- if product.media[1] != nil and settings.card_image_hover_effect != 'none' -%}
+						<span class="product-second-image motion-reduce">
+							<img srcset="{%- if product.media[1].width >= 165 -%}{{ product.media[1] | image_url: width: 165 }} 165w,{%- endif -%}
+									{%- if product.media[1].width >= 360 -%}{{ product.media[1] | image_url: width: 360 }} 360w,{%- endif -%}
+									{%- if product.media[1].width >= 533 -%}{{ product.media[1] | image_url: width: 533 }} 533w,{%- endif -%}
+									{%- if product.media[1].width >= 720 -%}{{ product.media[1] | image_url: width: 720 }} 720w,{%- endif -%}
+									{%- if product.media[1].width >= 940 -%}{{ product.media[1] | image_url: width: 940 }} 940w,{%- endif -%}
+									{%- if product.media[1].width >= 1066 -%}{{ product.media[1] | image_url: width: 1066 }} 1066w{%- endif -%}"
+								src="{{ product.media[1] | image_url: width: 1066 }}"
+								sizes="(min-width: {{ settings.screen_lg }}px) {{ settings.screen_lg | minus: 130 | divided_by: 4 }}px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
+								alt="{{ product.media[1].alt | escape }}"
+								loading="lazy"
+							width="{{ product.media[1].width }}"
+							height="{{ product.media[1].height }}">
+						</span>
+					{%- endif -%}
+				</a>
+			{%- else -%}
+				{{- 'image' | placeholder_svg_tag: 'placeholder-svg product-image' -}}
+			{%- endif -%}
+
+			{% comment %} Badge {% endcomment %}
+			{%- capture product_badge -%}
+				{%- if product.available == false -%}
+					<span class="badge sold-out" aria-hidden="true">{{- 'products.product.sold_out' | t -}}</span>
+				{%- elsif product.compare_at_price > product.price and product.available -%}
+					<span class="badge on-sale" aria-hidden="true">
+						<span class="sr-only">{{ 'products.product.on_sale' | t }}: </span>
+						{%- if product.compare_at_price_max > product.price -%}
+						-{{ product.compare_at_price_max | minus: product.price | times: 100.0 | divided_by: product.compare_at_price_max | round }}%
+						{%- endif -%}
+					</span>
+				{%- endif -%}
+			{%- endcapture -%}
+
+			{% comment %} Label New {% endcomment %}
+			{%- capture label_new_product -%}
+				{%- if settings.show_new_label and product_label_new == true -%}
+					<span class="new-lable-product">
+						{{ 'products.product.new_label_product' | t }}
+					</span>
+				{%- endif -%}
+			{%- endcapture -%}
+
+			{% if label_new_product != blank %}
+				<div class="labelnew-product">{{ label_new_product }}</div>
+			{% elsif product_badge != blank %}
+				<div class="product-badge">{{ product_badge }}</div>
+			{%- endif -%}
+
+		</div>
+	</div>
+
+	<div class="product-content-wrap">
+
+		{% comment %} Collections {% endcomment %}
+		{%- if settings.card_show_collections and product.collections.first -%}
+			<div class="product-collections">
+				{%- for cat in product.collections -%}
+					<a href="{{ cat.url }}">{{ cat.title }}</a>{% unless forloop.last %}, {% endunless %}
+				{%- endfor -%}
+			</div>
+		{%- endif -%}		
+
+		{% comment %} Title {% endcomment %}
+				{%- if settings.card_show_title -%}
+			<h2 class="product-title">
+				<a href="{{ product.url | split: '?' | first }}">{{- product.title | escape -}}</a>
+<div data-shop-id="{{shop.id}}" product-id="{{product.id }}" data-page="{{request.page_type}}" class="ddreview-star"></div>
+			</h2>
+		{%- endif -%}
+
+		{%- if settings.card_show_rating or settings.card_show_swatches -%}
+		<div class="list-ratting-swatches">
+			{% comment %} Rating {% endcomment %}
+			{%- if settings.card_show_rating -%}
+				<div class="product-rating">
+					<span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+				</div>
+			{%- endif -%}
+
+			{% comment %} Swatches {% endcomment %}
+			{% if settings.card_show_swatches %}
+				{{- product_swatches -}}		
+			{% endif %}
+		</div>
+		{%- endif -%}
+
+		{% if product.metafields.nesst_custom.except_product != blank %}
+			<div class="product-description">
+				{{ product.metafields.nesst_custom.except_product }}
+			</div>
+			{% else %}
+			<div class="product-description">
+				{{ product.description | strip_html | truncatewords: 21, '' }}
+			</div>
+		{% endif %}
+
+		{% comment %} Price {% endcomment %}
+		{%- if settings.card_show_price -%}
+			{%- render 'price', product: product -%}
+		{%- endif -%}
+
+		{% comment %} Add to cart and Add compare {% endcomment %}
+		<div class="product-card-bottom">
+			{% comment %} Add to cart {% endcomment %}
+			{{- product_add_to_cart -}}
+
+			<div class="product_actions" data-handle="{{ product.handle }}" data-id="{{ product.id }}">
+				<a class="product-action product-compare" href="{{ product.url | split: '?' | first }}">
+					{%- render 'icon', code: 'compare-product-hover' -%}
+					<span>{{ 'products.product.add_compare' | t }}</span>
+				</a>				
+			</div>
+		</div>
+
+	</div>
+</div>

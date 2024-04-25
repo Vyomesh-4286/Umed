@@ -1,0 +1,27 @@
+{%- assign pick_up_availabilities = variant.store_availabilities | where: 'pick_up_enabled', true -%}
+
+	<div class="toggle-dropdown list-location">
+		{%- liquid
+			for availability in pick_up_availabilities
+				
+			endfor
+		-%}
+		<div class="dropdown-summary">
+			{%- render 'icon', code: 'location' -%}
+
+			<div class="dropdown-summary-inner">
+				<span class="summary-info">{{ location.id }}</span>
+				<span class="dropdown-icon">{%- render 'icon', code: 'chevron-down' -%}</span>
+			</div>
+		</div>
+
+		<ul class="dropdown-content" role="list">
+			{%- for availability in pick_up_availabilities -%}
+				<li class="pickup-availability-item">
+					<h3 class="pickup-availability-location">
+						{{- availability.location.name -}}
+					</h3>
+				</li>
+			{%- endfor -%}
+		</ul>
+	</div>

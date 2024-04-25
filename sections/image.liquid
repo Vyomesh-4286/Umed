@@ -1,0 +1,157 @@
+{%- liquid
+	assign section_id    = '#shopify-section-' | append: section.id
+	assign selector      = '#shopify-section-' | append: section.id | append: ' .image-wrapper'
+	assign full          = section.settings.full
+	assign image         = section.settings.image
+	assign parallax      = section.settings.parallax
+	assign height        = section.settings.height
+	assign height_mobile = section.settings.height_mobile
+-%}
+
+<style>
+	{{ section_id }} {
+		margin-top: {{ section.settings.padding_top_mobile }}px;
+		margin-bottom: {{ section.settings.padding_bottom_mobile }}px;
+	}
+
+	@media (min-width: 768px) {
+		{{ section_id }} {
+			margin-top: {{ section.settings.padding_top }}px;
+			margin-bottom: {{ section.settings.padding_bottom }}px;
+		}
+	}
+
+	{%- if image != blank and parallax -%}
+		{{ selector }} {
+			background-image: url({{ image | image_url: width: 2100 }});
+			background-repeat: no-repeat;
+			background-size: cover;
+			background-position: center center;
+			background-attachment: fixed;
+		}
+	{%- endif -%}
+
+	{%- if height > 0 -%}
+		{{ selector }} {
+			height: {{ height }}px;
+		}
+	{%- endif -%}
+
+	{%- if height_mobile > 0 -%}
+		@media (max-width: 768px) {
+			{{ selector }} {
+				height: {{ height_mobile }}px;
+			}
+		}
+	{%- endif -%}
+</style>
+
+<div class="{% if full %}stretch-section{% else %}container{% endif %}">
+	<div class="image-wrapper">
+		{% if section.settings.urlimg != blank %} <a href="{{ section.settings.urlimg }}"></a> {% endif %}
+		
+		{%- if image != blank -%}
+			{%- unless parallax -%}
+				{{ image | image_url: width: 2100 | image_tag: loading: 'lazy' }}
+			{%- endunless -%}
+		{%- else -%}
+			{{- 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' -}}
+		{%- endif -%}
+	</div>
+</div>
+
+{% schema %}
+{
+	"name": "t:sections.image.name",
+	"class": "image-section",
+	"settings": [
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "t:sections.image.settings.image.label"
+		},
+		{
+			"type": "url",
+			"id": "urlimg",
+			"default": "/collections/all",
+			"label": "t:sections.image.settings.urlimg.label"
+		},
+		{
+			"type": "number",
+			"id": "height",
+			"default": 500,
+			"label": "t:sections.image.settings.height.label"
+		},
+		{
+			"type": "number",
+			"id": "height_mobile",
+			"label": "t:sections.image.settings.height_mobile.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "full",
+			"default": true,
+			"label": "t:sections.image.settings.full.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "parallax",
+			"default": false,
+			"label": "t:sections.image.settings.parallax.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 0,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 0,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.image.presets.name"
+		}
+	]
+}
+{% endschema %}

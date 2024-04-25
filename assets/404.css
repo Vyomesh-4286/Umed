@@ -1,0 +1,166 @@
+@-webkit-keyframes shine {
+  100% {
+    left: 125%;
+  }
+}
+@keyframes shine {
+  100% {
+    left: 125%;
+  }
+}
+@keyframes scale {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-1.5rem);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes circle-loading {
+  from {
+    transform: translate(-50%, -50%) rotate(0);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+.circle-loading:before {
+  content: "";
+  z-index: 5;
+  position: absolute;
+  border: 3px solid rgb(var(--loading-color));
+  border-top-color: transparent;
+  border-radius: 50%;
+  height: 20px;
+  width: 20px;
+  top: 50%;
+  left: 50%;
+  animation: circle-loading 500ms infinite linear;
+}
+
+.error-section {
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
+.error-section .error-content-page {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+}
+.error-section .logo {
+  font-size: 4rem;
+}
+.error-section .logo svg {
+  width: 100%;
+  height: 100%;
+}
+.error-section h1.heading,
+.error-section h2.heading,
+.error-section h3.heading,
+.error-section h4.heading,
+.error-section h5.heading,
+.error-section h6.heading {
+  font-weight: 700;
+}
+.error-section .heading {
+  margin: 0;
+}
+.error-section .description {
+  line-height: 1.8;
+  margin-top: 2.4rem;
+}
+@media (hover: hover) {
+  .error-section .description a:hover {
+    color: rgb(var(--color-2)) !important;
+  }
+}
+.error-section .button-404 {
+  display: inline-block;
+  font-size: 1.4rem;
+  font-weight: 700;
+  padding: 1.2rem 4.3rem;
+  border-radius: 4px;
+  color: #fff;
+  background-color: rgb(var(--link-hover));
+  transition: all 300ms linear 0s;
+  letter-spacing: 0.5px;
+}
+.error-section .button-404 svg {
+  width: 1.25rem;
+  height: auto;
+  margin-right: 0.5rem;
+}
+@media (hover: hover) {
+  .error-section .button-404:hover {
+    color: #fff;
+    background-color: rgb(var(--color-2));
+  }
+}
+.error-section .box-image svg.placeholder-svg {
+  width: 30rem;
+}
+.error-section .error-search-form {
+  position: relative;
+  width: 44.4rem;
+  max-width: 90%;
+  margin: auto;
+}
+@media (max-width: 575px) {
+  .error-section .error-search-form {
+    width: 40rem;
+  }
+}
+.error-section .error-search-form .field-input {
+  height: 6.4rem;
+  box-shadow: 0 0 0 0.1rem #e0e0e0;
+  padding: 0 19px;
+  padding-right: 3.5em;
+  width: 100%;
+  border-radius: var(--button-radius-theme);
+}
+.error-section .error-search-form .field-input:focus {
+  box-shadow: 0 0 0 0.1rem rgb(var(--link-hover), 0.5);
+}
+.error-section .error-search-form button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  padding: 0 2.4rem;
+  transition: all 0.25s;
+  border-radius: var(--button-radius-theme);
+}
+@media (hover: hover) {
+  .error-section .error-search-form button:hover {
+    color: #fff;
+    background-color: rgb(var(--button-bg-color));
+  }
+}

@@ -1,0 +1,110 @@
+<div class="mini-cart">
+  <div class="side-cart-hover-destop cart-em{%- if cart == empty -%}pty{%- endif -%}">
+    <a class="remove-mini-cart"
+      ><span class="remove-icon">{%- render 'icon', code: 'close' -%}</span></a
+    >
+    <div class="side-cart-inner">
+      <div class="side-cart-content">
+        {%- if cart == empty -%}
+          <p>{{- 'cart.general.empty' | t -}}</p>
+        {%- else -%}
+          {%- for item in cart.items -%}
+            <div class="product-item" data-id="{{ item.id }}">
+              <div class="box-product-img">
+                {% if item.image %}
+                  <a href="{{ item.url | default: '#' }}" class="product-url" tabindex="-1">
+                    <img
+                      class="product-image"
+                      src="{{ item.image | image_url: width: 200, height: 200, crop: 'center' }}"
+                      alt="{{ item.image.alt | escape }}"
+                      width="70"
+                      height="70"
+                      loading="lazy"
+                    >
+                  </a>
+                {% else %}
+                  {{- 'product-1' | placeholder_svg_tag: 'product-image' -}}
+                {% endif %}
+              </div>
+
+              <div class="product-info">
+                {% comment %} Title {% endcomment %}
+                <h2 class="product-name">
+                  <a href="{{ item.url | default: '#' }}" tabindex="-1">
+                                        {{- item.product.title | escape -}}
+                  </a>
+<div data-shop-id="{{shop.id}}" product-id="{{item.product.id }}" data-page="cart" class="ddreview-star"></div>
+                </h2>
+
+                {% comment %} Variant title {% endcomment %}
+                {%- unless item.product.has_only_default_variant -%}
+                  <div class="product-variant-name">
+                    {%- liquid
+                      for option in item.options_with_values
+                        capture separator
+                          unless forloop.last
+                            echo ' / '
+                          endunless
+                        endcapture
+
+                        echo option.value | append: separator
+                      endfor
+                    -%}
+                  </div>
+                {%- endunless -%}
+
+                {% comment %} Selling plan {% endcomment %}
+                {%- if item.selling_plan_allocation != null -%}
+                  <p class="product-option">{{ item.selling_plan_allocation.selling_plan.name }}</p>
+                {%- endif -%}
+
+                <div class="wrap-qr">
+                  {% comment %} Quantity {% endcomment %}
+                  <span class="quantity-item">
+                    {{ item.quantity }}
+                    {%- render 'icon', code: 'close' -%}
+                  </span>
+
+                  {% comment %} Price {% endcomment %}
+
+                  {% render 'price', product: item.variant -%}
+                  {%- render 'price-unit', product: item -%}
+                </div>
+              </div>
+
+              <div class="shopping-cart-delete">
+                {% comment %} Remove {% endcomment %}
+                <a
+                  href="{{ item.url_to_remove }}"
+                  class="product-remove"
+                  aria-label="{{ 'sections.cart.remove_title' | t: title: item.title }}"
+                >
+                  <span class="remove-icon">{%- render 'icon', code: 'close' -%}</span>
+                </a>
+              </div>
+            </div>
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+      {%- if cart != empty -%}
+        <div class="side-cart-footer">
+          <div class="shopping-cart-total cart-footer">
+            <h6>
+              {{- 'sections.cart.total' | t -}}
+              :
+            </h6>
+            <span class="totals-price">{%- render 'get-price', price: cart.total_price -%}</span>
+          </div>
+
+          <div class="shopping-cart-button">
+            <a href="{{ routes.cart_url }}" class="go-to-cart">{{ 'cart.general.cart' | t }}</a>
+
+            <form action="{{ routes.cart_url }}" method="post" class="go-to-checkout">
+              <button class="button primary-button" name="checkout">{{ 'sections.cart.checkout' | t }}</button>
+            </form>
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>

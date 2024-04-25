@@ -1,0 +1,485 @@
+{%- liquid
+  assign section_id = '#shopify-section-' | append: section.id
+  assign full = section.settings.full
+-%}
+
+<footer class="footer-bottom {% if full %}stretch-section-padding{% else %}container{% endif %}">
+  {% comment %} Blocks {% endcomment %}
+  <div class="footer-blocks-inner">
+    {%- for block in section.blocks -%}
+      <div
+        class="col-lg-{{ block.settings.width }} col-md-{{ block.settings.width_tb }} col-{{ block.settings.width_mb }} footer-block-item block-{{ block.type | replace: '_', '-' }}"
+        {{ block.shopify_attributes }}
+      >
+        <div class="footer-block text-{{ block.settings.align }}">
+          {%- case block.type -%}
+            {%- when '@app' -%}
+              {%- render block -%}
+
+            {%- when 'info_footer' -%}
+              <div class="custom">
+                {% if block.settings.subtext != blank %}
+                  {{ block.settings.subtext }}
+                {% endif %}
+              </div>
+
+              {% if block.settings.enable_social %}
+                <div class="social-footer">
+                  {% if block.settings.title_social != blank %}
+                    <h6 class="title-social">{{ block.settings.title_social }}</h6>
+                  {% endif %}
+                  {% render 'social-media' %}
+                </div>
+              {% endif %}
+
+              {% if block.settings.description_footer_bt != blank %}
+                <p class="description-footer">
+                  {{ block.settings.description_footer_bt }}
+                </p>
+              {% endif %}
+
+            {%- when 'list_tell' -%}
+              <div class="list-tell">
+                {% if block.settings.support_tel != blank or block.settings.support_description != blank %}
+                  <div class="item">
+                    {%- render 'icon', code: 'phone-call' -%}
+                    <div class="support-info">
+                      {% if block.settings.support_tel != blank %}
+                        <p class="support-tell">{{ block.settings.support_tel }}</p>
+                      {% endif %}
+
+                      {% if block.settings.support_description != blank %}
+                        <span class="support-description">{{ block.settings.support_description }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endif %}
+
+                {% if block.settings.support_tel1 != blank or block.settings.support_description1 != blank %}
+                  <div class="item">
+                    {%- render 'icon', code: 'phone-call' -%}
+                    <div class="support-info">
+                      {% if block.settings.support_tel1 != blank %}
+                        <p class="support-tell">{{ block.settings.support_tel1 }}</p>
+                      {% endif %}
+
+                      {% if block.settings.support_description1 != blank %}
+                        <span class="support-description">{{ block.settings.support_description1 }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+          {%- endcase -%}
+        </div>
+      </div>
+    {%- endfor -%}
+  </div>
+</footer>
+
+<style>
+  {%- if section.settings.text_color != blank -%}
+  	{{ section_id }} .footer-blocks {
+  		color: {{ section.settings.text_color }};
+      background-color: {{ section.settings.section_bg_color }};
+  	}
+  {%- endif -%}
+       {{ section_id }} .footer-blocks-inner {
+  		background-color: {{ section.settings.section_bg_color }};
+  	}
+  {%- if section.settings.link_color != blank -%}
+  	{{ section_id }} .footer-blocks a:not(.icon, .icon-backto-top) {
+  		color: {{ section.settings.link_color }};
+  	}
+  {%- endif -%}
+
+  {%- if section.settings.link_color_hover != blank -%}
+  	{{ section_id }} .footer-blocks a:not(.icon, .icon-backto-top):hover {
+  		color: {{ section.settings.link_color_hover }};
+  	}
+  {%- endif -%}
+
+
+  {{ section_id }} .footer-bottom{
+  	padding-top: {{ section.settings.padding_top_mobile }}px;
+  	padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+
+  	{%- if section.settings.bordertop_color != blank -%}
+  		border-top: 1px solid {{ section.settings.bordertop_color }};
+  	{%- endif -%}
+  }
+
+  @media (min-width: 768px) {
+  	{{ section_id }} .footer-bottom {
+  		padding-top: {{ section.settings.padding_top }}px;
+  		padding-bottom: {{ section.settings.padding_bottom }}px;
+  	}
+  }
+</style>
+
+{% schema %}
+{
+	"name": "t:sections.footer_bottom.name",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "full",
+			"default": false,
+			"label": "t:general.layout.full.label"
+		},
+		{
+			"type": "color",
+			"id": "bordertop_color",
+			"default": "#D8F1E5",
+			"label": "t:sections.footer_bottom.settings.bordertop_color.label"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"label": "t:sections.footer_bottom.settings.text_color.label"
+		},
+		{
+			"type": "color",
+			"id": "link_color",
+			"label": "t:sections.footer_bottom.settings.link_color.label"
+		},
+		{
+			"type": "color",
+			"id": "link_color_hover",
+			"label": "t:sections.footer_bottom.settings.link_color_hover.label"
+		},
+        {
+          "type":"color",
+          "id":"section_bg_color",
+          "label":"Background Color"
+        },
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 30,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 30,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"max_blocks": 5,
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "list_tell",
+			"name": "t:sections.footer_bottom.blocks.list_tell.name",
+			"settings": [
+				{
+					"type": "select",
+					"id": "align",
+					"options": [
+						{
+							"value": "left",
+							"label": "t:general.alignment.left.label"
+						},
+						{
+							"value": "center",
+							"label": "t:general.alignment.center.label"
+						},
+						{
+							"value": "right",
+							"label": "t:general.alignment.right.label"
+						}
+					],
+					"default": "left",
+					"label": "t:general.alignment.label"
+				},
+				{
+					"type": "text",
+					"id": "support_tel",
+					"default": "1900 - 6666",
+					"label":"t:sections.footer_bottom.blocks.list_tell.settings.support_tel.label"
+				},
+				{
+					"type": "text",
+					"id": "support_description",
+					"default": "Working 8:00 - 22:00",
+					"label":"t:sections.footer_bottom.blocks.list_tell.settings.support_description.label"
+				},
+				{
+					"type": "text",
+					"id": "support_tel1",
+					"default": "1900 - 8888",
+					"label":"t:sections.footer_bottom.blocks.list_tell.settings.support_tel.label"
+				},
+				{
+					"type": "text",
+					"id": "support_description1",
+					"default": "24/7 Support Center",
+					"label":"t:sections.footer_bottom.blocks.list_tell.settings.support_description.label"
+				},
+				{
+					"type":"select",
+					"id":"width",
+					"label":"t:sections.footer_bottom.blocks.list_tell.settings.width.label",
+					"default":"4",
+					"options":[
+						{
+							"value":"2",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_16.label"
+						},
+						{
+							"value":"15",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_20.label"
+						},
+						{
+							"value":"3",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_25.label"
+						},
+						{
+							"value":"4",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_33.label"
+						},
+						{
+							"value":"6",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_50.label"
+						},
+						{
+							"value":"8",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_66.label"
+						},
+						{
+							"value":"12",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_100.label"
+						}
+					]
+				},
+				{
+					"type":"select",
+					"id":"width_tb",
+					"label":"t:sections.footer_bottom.blocks.list_tell.settings.width_tb.label",
+					"default":"6",
+					"options":[
+						{
+							"value":"3",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_25.label"
+						},
+						{
+							"value":"4",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_33.label"
+						},
+						{
+							"value":"6",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_50.label"
+						},
+						{
+							"value":"8",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_66.label"
+						},
+						{
+							"value":"12",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_100.label"
+						}
+					]
+				},
+				{
+					"type":"select",
+					"id":"width_mb",
+					"label":"t:sections.footer_bottom.blocks.list_tell.settings.width_mb.label",
+					"default":"12",
+					"options":[
+						{
+							"value":"6",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_50.label"
+						},
+						{
+							"value":"12",
+							"label":"t:sections.footer_bottom.blocks.list_tell.settings.w_100.label"
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "info_footer",
+			"name": "t:sections.footer_bottom.blocks.info_footer.name",
+			"settings": [
+				{
+					"type": "select",
+					"id": "align",
+					"options": [
+						{
+							"value": "left",
+							"label": "t:general.alignment.left.label"
+						},
+						{
+							"value": "center",
+							"label": "t:general.alignment.center.label"
+						},
+						{
+							"value": "right",
+							"label": "t:general.alignment.right.label"
+						}
+					],
+					"default": "left",
+					"label": "t:general.alignment.label"
+				},
+				{
+					"type":"richtext",
+					"id":"subtext",
+					"default":"<p>© 2022, Techspawn Solution Made by Umed<br>All rights reserved</p>",
+					"label":"t:sections.footer_bottom.blocks.info_footer.settings.subtext.label"
+				},
+				{
+					"type":"checkbox",
+					"id":"enable_social",
+					"default":true,
+					"label":"t:sections.footer_bottom.blocks.info_footer.settings.enable_social.label"
+				},
+				{
+					"type":"text",
+					"id":"title_social",
+					"default":"Follow Us",
+					"label":"t:sections.footer_bottom.blocks.info_footer.settings.title_social.label"
+				},
+				{
+					"type":"text",
+					"id":"description_footer_bt",
+					"default":"Up to 15% discount on your first subscribe",
+					"label":"t:sections.footer_bottom.blocks.info_footer.settings.description_footer_bt.label"
+				},
+				{
+					"type":"select",
+					"id":"width",
+					"label":"t:sections.footer_bottom.blocks.info_footer.settings.width.label",
+					"default":"4",
+					"options":[
+						{
+							"value":"2",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_16.label"
+						},
+						{
+							"value":"15",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_20.label"
+						},
+						{
+							"value":"3",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_25.label"
+						},
+						{
+							"value":"4",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_33.label"
+						},
+						{
+							"value":"6",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_50.label"
+						},
+						{
+							"value":"8",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_66.label"
+						},
+						{
+							"value":"12",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_100.label"
+						}
+					]
+				},
+				{
+					"type":"select",
+					"id":"width_tb",
+					"label":"t:sections.footer_bottom.blocks.info_footer.settings.width_tb.label",
+					"default":"6",
+					"options":[
+						{
+							"value":"3",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_25.label"
+						},
+						{
+							"value":"4",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_33.label"
+						},
+						{
+							"value":"6",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_50.label"
+						},
+						{
+							"value":"8",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_66.label"
+						},
+						{
+							"value":"12",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_100.label"
+						}
+					]
+				},
+				{
+					"type":"select",
+					"id":"width_mb",
+					"label":"t:sections.footer_bottom.blocks.info_footer.settings.width_mb.label",
+					"default":"12",
+					"options":[
+						{
+							"value":"6",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_50.label"
+						},
+						{
+							"value":"12",
+							"label":"t:sections.footer_bottom.blocks.info_footer.settings.w_100.label"
+						}
+					]
+				}
+			]
+		}
+	],
+	"default": {
+		"blocks": [
+			{
+				"type": "info_footer"
+			},
+			{
+				"type": "list_tell"
+			},
+			{
+				"type": "info_footer"
+			}
+		]
+	}
+}
+{% endschema %}

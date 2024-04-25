@@ -1,0 +1,274 @@
+{%- assign product_form_id = 'quickview-product-form' -%}
+
+{%- if product.media.size > 1 -%}
+  {{ 'swiper.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'swiper.js' | asset_url }}" id="quick-view-swiper" defer="defer"></script>
+{%- endif -%}
+
+{% comment %} Gallery {% endcomment %}
+<div class="product-gallery">
+  {%- if product.media.size > 1 -%}
+    <div class="swiper mySwiper2">
+      <div class="swiper-wrapper">
+        {%- for media in product.media -%}
+          <div class="swiper-slide" data-id="{{ media.id }}">
+            {% render 'product-media',
+              media: media,
+              image_only: true,
+              position: forloop.index,
+              loop: section.settings.video_looping,
+              modal_id: media.id,
+              role: 'main'
+            %}
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <div class="swiper-controls">
+        <span class="swiper-button-prev">{%- render 'icon', code: 'chevron-left' -%}</span>
+        <span class="swiper-button-next">{%- render 'icon', code: 'chevron-right' -%}</span>
+      </div>
+    </div>
+
+    <div thumbsSlider="" class="product-thumb-slide swiper mySwiper">
+      <div class="swiper-wrapper">
+        {%- for media in product.media -%}
+          <div class="thumb-item swiper-slide" data-id="{{ section.id }}-{{ media.id }}">
+            {%- render 'product-media',
+              media: media,
+              position: forloop.index,
+              loop: section.settings.video_looping,
+              modal_id: section.id,
+              role: 'thumb'
+            -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- else -%}
+    {% render 'product-media',
+      media: product.media[0],
+      image_only: true,
+      position: 0,
+      loop: false,
+      modal_id: 0,
+      role: 'main'
+    %}
+  {%- endif -%}
+</div>
+
+{% comment %} Summary {% endcomment %}
+<div class="product-summary">
+  <div class="product-summary-inner">
+    {% comment %} Sale label {% endcomment %}
+    {%- liquid
+      assign sale_number = ''
+      if product.available
+        if product.type == 'variable'
+          assign variant_badge = product.selected_or_first_available_variant
+
+          if variant_badge.compare_at_price > variant_badge.price
+            assign sale_number = variant_badge.compare_at_price | minus: variant_badge.price | times: 100.0 | divided_by: variant_badge.compare_at_price | round | append: '%'
+          endif
+        else
+          if product.compare_at_price_max > product.price
+            assign sale_number = product.compare_at_price_max | minus: product.price | times: 100.0 | divided_by: product.compare_at_price_max | round | append: '%'
+          endif
+        endif
+      endif
+    -%}
+
+    {%- if sale_number != blank -%}
+      <div class="product-sale-label-top">
+        <span>{{ 'products.product.sale_off' | t }} </span>
+      </div>
+    {%- endif -%}
+
+    {% comment %} Title {% endcomment %}
+    <h1 class="product-title">
+      <a href="{{ product.url | split: '?' | first }}" class="product-url">
+        {{- product.title | escape -}}
+      </a>
+    </h1>
+
+    {% comment %} Reviews {% endcomment %}
+    {%- liquid
+      assign reviews = product.metafields.spr.reviews
+      assign review_count = reviews | split: '"reviewCount": "' | last | split: '"' | first | plus: 0
+      assign review_rating = reviews | split: '"ratingValue": "' | last | split: '"' | first | plus: 0 | round: 2
+    -%}
+    {% comment %}
+      <div class="product-rating">
+        <span class="rating-star">{%- render 'icon', code: 'star' -%}</span>
+
+        {%- if review_count > 0 -%}
+          <span class="rating-value">{{ review_rating }}/5</span>
+          <span class="rating-count">({{ 'products.product.reviews' | t: count: review_count }})</span>
+        {%- else -%}
+          <span class="rating-count">{{ 'products.product.no_reviews' | t }}</span>
+        {%- endif -%}
+      </div>
+    {% endcomment %}
+    <div
+      class="audien-review-star-rating"
+      style="display:none;"
+      data-product-id="{{ card_product.id | default: product.id }}"
+      data-domain="{{ shop.domain }}"
+    ></div>
+    {% comment %} Price {% endcomment %}
+    <div class="product-price-wrap">
+      {%- render 'price-single', product: product, use_variant: true, price_class: '' -%}
+
+      {%- form 'product', product, id: 'product-form-installment', class: 'installment' -%}
+        <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+        {{ form | payment_terms }}
+      {%- endform -%}
+    </div>
+
+    {% comment %} Variant picker {% endcomment %}
+    {%- unless product.has_only_default_variant -%}
+      <div class="product-variants variant-button swatches-circle" data-url="{{ product.url }}">
+        {%- for option in product.options_with_values -%}
+          {%- liquid
+            assign selected_value = option.selected_value
+            assign index = forloop.index0
+            assign id = 'option-' | append: product.id | append: '-' | append: index
+            assign name = option.name | downcase
+            assign have_color = false
+
+            if name == 'color' or name == 'colour'
+              assign have_color = forloop.index0
+            endif
+          -%}
+
+          <div class="variant-field">
+            <div class="field-title">
+              {{- option.name -}}
+              :
+              <span class="selected-value sr-only">{{- selected_value -}}</span>
+            </div>
+
+            {%- for value in option.values -%}
+              <input
+                type="radio"
+                id="{{ id | append: forloop.index0 }}"
+                name="{{ option.name | escape }}"
+                value="{{ value | escape }}"
+                form="{{ product_form_id }}"
+                class="field-value"
+                {% if selected_value == value %}
+                  checked
+                {% endif %}
+              >
+
+              {%- if have_color -%}
+                {%- liquid
+                  assign variant = product.variants[forloop.index0]
+                  assign meta_color = variant.metafields.color.value
+
+                  capture color
+                    if meta_color
+                      echo meta_color
+                    else
+                      echo value | handle | remove: '-'
+                    endif
+                  endcapture
+                -%}
+
+                <label class="field-label swatch swatch-image" for="{{ id | append: forloop.index0 }}">
+                  {{-
+                    variant.featured_media
+                    | image_url: width: 100, height: 100, crop: 'center'
+                    | image_tag: loading: 'lazy'
+                  -}}
+                  <span class="tooltip">{{- value -}}</span>
+                </label>
+              {%- else -%}
+                <label class="field-label field-button" for="{{ id | append: forloop.index0 }}">{{- value -}}</label>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- endfor -%}
+
+        {% comment %} Product variant data {% endcomment %}
+        <script data-product-variants>
+          {{ product.variants | json }}
+        </script>
+
+        {% comment %} Product quantity data {% endcomment %}
+        <script data-inventory-quantity>
+          [{%- liquid
+          	for var in product.variants
+          		echo '{"id":' | append: var.id | append: ',"qty":' | append: var.inventory_quantity | append: '}'
+
+          		unless forloop.last
+          			echo ','
+          		endunless
+          	endfor
+          -%}]
+        </script>
+
+        <noscript>
+          <div class="variant-field{% if product.has_only_default_variant %} hidden{% endif %}">
+            <label class="field-title" for="noscript-option-{{ section.id }}">
+              {{- 'products.product.product_variants' | t -}}
+            </label>
+
+            <select class="field-value" name="id" id="noscript-option-{{ section.id }}" form="{{ product_form_id }}">
+              {%- for variant in product.variants -%}
+                <option
+                  value="{{ variant.id }}"
+                  {% if variant == product.selected_or_first_available_variant %}
+                    selected="selected"
+                  {% endif %}
+                  {% if variant.available == false %}
+                    disabled
+                  {% endif %}
+                >
+                  {{ variant.title }}
+                  {%- if variant.available == false %} - {{ 'products.product.sold_out' | t }}{% endif %}
+                  - {{ variant.price | money | strip_html }}
+                </option>
+              {%- endfor -%}
+            </select>
+          </div>
+        </noscript>
+      </div>
+    {%- endunless -%}
+
+    {% comment %} Buy button {% endcomment %}
+    {%- form 'product',
+      product,
+      id: product_form_id,
+      class: 'product-buy',
+      novalidate: 'novalidate',
+      data-type: 'add-to-cart-form'
+    -%}
+      <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+
+      <div class="item-field">
+        <div class="product-quantity">
+          {% render 'quantity' %}
+        </div>
+
+        <button
+          type="submit"
+          name="add"
+          class="button add-to-cart-button primary-button"
+          {%- if product.selected_or_first_available_variant.available == false -%}
+            disabled
+          {%- endif -%}
+        >
+          {% if product.selected_or_first_available_variant.available %}
+            {%- render 'icon', code: 'cart' -%}
+            {{- 'products.product.add_to_cart_quickview' | t -}}
+          {% else %}
+            {{- 'products.product.out_of_stock' | t -}}
+          {% endif %}
+        </button>
+      </div>
+    {%- endform -%}
+  </div>
+</div>
+
+{% comment %} Swiper slide {% endcomment %}

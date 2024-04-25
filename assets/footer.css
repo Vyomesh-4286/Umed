@@ -1,0 +1,28 @@
+#shopify-section-footer .footer {
+  padding: 50px;
+}
+
+.footer .contact-infor {
+  display: flex;
+}
+
+.content-for-layout .shopify-policy__container, .footer-blocks .container {
+  max-width: 1200px;
+  padding-left: 30px;
+  padding-right: 30px;
+}
+.shopify-policy__container {
+    padding-bottom: 3rem;
+}
+@media (max-width: 992px) {
+  .content-for-layout .shopify-policy__container, .footer-blocks .container {
+    max-width: 992px;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+@media (max-width: 768px) {
+  .content-for-layout .shopify-policy__container, .footer-blocks .container {
+    max-width: 100%;
+  }
+}

@@ -1,0 +1,28 @@
+<div class="product-card product-card-item-v2 border-radius-theme text-left">
+	<div class="product-image-wrap" tabindex="-1">	
+		<div class="border-radius-theme product-image-wrap">
+			{{- 'product-' | append: index | placeholder_svg_tag: 'placeholder-svg' -}}
+		</div>
+	</div>
+
+	<div class="product-content-wrap">
+		<div class="product-collections">
+			<a href="#">Collection</a>
+		</div>
+
+		<h2 class="product-title">
+			<span>{{- 'onboarding.products.title' | t -}}</span>
+		</h2>
+
+		<div class="product-price">
+			<span class="price">
+				<span class="sr-only">Sale price</span>
+				$55.00
+			</span>
+			<s class="regular-price">
+				<span class="sr-only">Regular price</span>
+				$56.00
+			</s>
+		</div>
+	</div>	
+</div>

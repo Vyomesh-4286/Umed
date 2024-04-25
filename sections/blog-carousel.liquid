@@ -1,0 +1,577 @@
+{%- liquid
+	assign section_id     = '#shopify-section-' | append: section.id
+	assign total          = section.settings.total
+	assign full           = section.settings.full
+	assign arrows         = section.settings.arrows
+	assign dots           = section.settings.dots
+	assign column_gap     = section.settings.column_gap
+	assign columns        = section.settings.columns
+	assign columns_tablet = 2
+	assign columns_mobile = 1
+	assign blog           = section.settings.blog
+	assign src_tag        = 'src'
+
+	if settings.image_animation
+		assign src_tag = 'data-src'
+	endif
+
+	if columns == 1
+		assign columns_mobile = 1
+		assign columns_tablet = 1
+	elsif columns == 2
+		assign columns_mobile = 1
+		assign columns_tablet = 2
+	endif
+
+	if blog != blank and blog.articles_count > 0
+		assign columns = section.settings.columns
+	endif
+-%}
+
+{{ 'swiper.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'swiper.js' | asset_url }}" defer="defer"></script>
+
+{%- capture heading_icon -%}
+	{%- if section.settings.icon != blank or section.settings.svg != blank -%}
+		<span class="heading-icon icon-{{ section.settings.icon_position }}">
+			{%- liquid
+				if section.settings.icon != blank
+					echo section.settings.icon | image_url: width: section.settings.icon.width, height: section.settings.icon.height | image_tag: loading: 'lazy'
+				elsif section.settings.svg != blank
+					echo section.settings.svg
+				endif
+			-%}
+		</span>
+	{%- endif -%}
+{%- endcapture -%}
+
+<div class="section-blog-carousel {% if full %}stretch-section{% else %}container{% endif %}">
+	{%- if section.settings.title != blank -%}
+		<div class="title-wrapper text-center">
+			{%- liquid
+				if section.settings.icon_position == 'above'
+					echo heading_icon
+				endif
+			-%}
+
+			<h2 class="title">{{- section.settings.title | escape -}}</h2>
+
+			{%- liquid
+				if section.settings.icon_position == 'under'
+					echo heading_icon
+				endif
+			-%}
+		</div>
+	{%- endif -%}
+
+	<div class="content-blog-page carousel-swiper has-blog-post-card">
+		<template data-options>
+			{
+				{%- if section.settings.autoplay -%}
+					"autoplay": {
+						"delay": {{ section.settings.delay | times: 1000 }}
+					},
+				{%- endif -%}
+
+				{%- if arrows -%}
+				"navigation": {
+					"nextEl": "{{ section_id }} .swiper-button-next",
+					"prevEl": "{{ section_id }} .swiper-button-prev"
+				},
+				{%- endif -%}
+
+				{%- if dots -%}
+				"pagination": {
+					"el": "{{ section_id }} .swiper-pagination",
+					"type": "bullets",
+					"clickable": true
+				},
+				{%- endif -%}
+
+				"loop": true,
+				"slidesPerView": {{ columns_mobile }},
+				"spaceBetween": {{ column_gap }},
+				"breakpoints": {
+					"768": {
+						"slidesPerView": {{ columns_tablet }}
+					},
+					"992": {
+						"slidesPerView": {{ columns }}
+					}
+				}
+			}
+		</template>
+
+		<div class="swiper blog-grid">
+			<div class="swiper-wrapper">
+				{%- if blog != blank and blog.articles_count > 0 -%}		
+					{%- for article in blog.articles limit: total -%}
+						<div class="swiper-slide" data-{{ forloop.index0 }} {% if request.design_mode %} data-index="{{ forloop.index0 }}"{% endif %}>
+							<article class="article-card text-{{ section.settings.text_align }}">
+
+								{% if section.settings.show_image %}
+									<div class="article_img">
+										<a href="{{ article.url }}" class="article-image">
+											{%- assign article_image = article.image -%}
+
+											{%- if article_image != blank -%}
+												<img {% if settings.image_animation %}class="lazy-image"{% endif %}
+													{{ src_tag }}="{{ article_image | image_url: width: 550, height: 240 }}"
+													alt="{{ article_image.alt | escape }}"
+													loading="lazy"
+													width="{{ article_image.width }}"
+													height="{{ article_image.height }}">
+											{%- else -%}
+												{%- render 'icon', code: 'placeholder' -%}
+											{%- endif -%}
+										</a>
+									</div>
+								{%- endif -%}
+
+								{% comment %} cate {% endcomment %}
+								{%- if section.settings.show_cate -%}
+									<div class="cate">
+										<a href="{{ blog.url }}">
+											{{- blog.title | escape -}}
+										</a>
+									</div>
+								{%- endif -%}
+
+								{% comment %} Heading {% endcomment %}
+								{%- if section.settings.show_title -%}
+									<h2 class="article-card-title h4">
+										<a href="{{ article.url }}">
+											{{- article.title | escape -}}
+										</a>
+									</h2>
+								{%- endif -%}
+
+								{%- if section.settings.show_date or section.settings.show_comment -%}
+									<div class="article-card-info">
+										{% comment %} Date {% endcomment %}
+										{%- if section.settings.show_date -%}
+											<span class="article-info-item article-card-date">
+												{{- article.published_at | time_tag: format: 'short_month_day_year' -}}
+											</span>
+										{%- endif -%}
+
+										{% comment %} Comment {% endcomment %}
+										{%- if section.settings.show_comment and article.comments_count > 0 and blog.comments_enabled? -%}
+											<div class="article-info-item article-card-comment">								
+												<span>{{ 'blogs.article.comments' | t: count: article.comments_count }}</span>
+											</div>
+										{%- endif -%}
+									</div>
+								{%- endif -%}
+
+								{% if section.settings.show_btn %}
+								<div class="button-blog">
+									<a class="btn-readmore" href="{{ article.url }}">{{ 'blogs.article.read_more' | t }}</a>
+								</div> 
+								{% endif %}
+								
+							</article>
+						</div>
+					{%- endfor -%}
+				{%- else -%}
+					{%- for i in (1..total) -%}
+						{%- liquid
+							capture index
+								cycle 1, 2, 3, 4, 5, 6
+							endcapture
+						-%}
+
+						<div class="swiper-slide" data-{{ index }} {% if request.design_mode %} data-index="{{ forloop.index0 }}"{% endif %}>
+							<article class="article-card text-{{ section.settings.text_align }}">
+								<div class="article-image">
+									{%- render 'icon', code: 'placeholder' -%}
+								</div>
+
+								<div class="cate">
+									<a href="#">
+										{{ 'onboarding.blogs.cate' | t }}
+									</a>
+								</div>
+
+								<h2 class="article-card-title h4">
+									<a href="#">
+										{{ 'onboarding.blogs.title' | t }}
+									</a>
+								</h2>
+
+								<div class="article-card-info">
+									<span class="article-info-item article-card-date">
+										{{- 'onboarding.blogs.date' | t -}}
+									</span>
+
+									<div class="article-info-item article-card-comment">								
+										<span>{{ 'blogs.article.comments1' | t }}</span>
+									</div>
+								</div>
+
+								<div class="button-blog">
+									<a class="btn-readmore" href="#">{{ 'blogs.article.read_more' | t }}</a>
+								</div>
+							</article>
+						</div>
+					{%- endfor -%}
+				{%- endif -%}
+			</div>
+		</div>
+
+		{%- if arrows or dots -%}
+			<div class="swiper-controls">
+				{%- if arrows -%}
+					<div class="swiper-button-prev">{%- render 'icon', code: 'chevron-left' -%}</div>
+					<div class="swiper-button-next">{%- render 'icon', code: 'chevron-right' -%}</div>
+				{%- endif -%}
+
+				{%- if dots -%}
+					<div class="swiper-pagination">{%- render 'icon', code: 'chevron-left' -%}</div>
+				{%- endif -%}
+			</div>
+		{%- endif -%}
+	</div>
+</div>
+
+<style>
+	{{ section_id }} {
+		padding-top: {{ section.settings.padding_top_mobile }}px;
+		margin-top: {{ section.settings.margin_top_mobile }}px;
+		padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+		margin-bottom: {{ section.settings.margin_bottom_mobile }}px;
+
+		{%- if section.settings.bg_color != blank -%}
+			background-color: {{ section.settings.bg_color }};
+		{%- endif -%}
+
+		{%- if section.settings.bg_img != blank -%}
+			background-image: url({{ section.settings.bg_img | image_url: width: 1920 }});
+			background-repeat: no-repeat;
+			background-size: cover;
+			background-position: center center;
+		{%- endif -%}
+	}
+
+	{{ section_id }} .swiper:not(.swiper-initialized) .swiper-slide {
+		width: calc( ( 100% - {{ columns | minus: 1 | times: 30 }}px ) / {{ columns }} );
+		margin-right: {{ column_gap }}px;
+	}
+
+	@media (min-width: 768px) {
+		{{ section_id }} {
+			padding-top: {{ section.settings.padding_top }}px;
+			margin-top: {{ section.settings.margin_top }}px;
+			padding-bottom: {{ section.settings.padding_bottom }}px;
+			margin-bottom: {{ section.settings.margin_bottom }}px;
+		}
+
+		{{ section_id }} .title-wrapper .title {
+			font-size: {{ section.settings.size_title }}px;
+		}
+	}
+
+	{{ section_id }} .title-wrapper .title {
+		font-size: {{ section.settings.size_title | times: 0.85 }}px;
+	}
+</style>
+
+{% schema %}
+{
+	"name": "t:sections.blog-carousel.name",
+	"tag": "section",
+	"class": "blog-carousel-section has-blog-card",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "full",
+			"default": false,
+			"label": "t:sections.blog-carousel.settings.full.label"
+		},
+		{
+			"type": "image_picker",
+			"id": "bg_img",
+			"label": "t:sections.blog-carousel.settings.bg_img.label"
+		},
+		{
+			"type": "color",
+			"id": "bg_color",
+			"label": "t:sections.blog-carousel.settings.bg_color.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.blog-carousel.settings.header_title.content"
+		},
+		{
+			"type": "text",
+			"id": "title",
+			"default": "From Our Blog",
+			"label": "t:sections.blog-carousel.settings.title.label"
+		},
+		{
+			"type": "number",
+			"id": "size_title",
+			"default": 48,
+			"label": "t:sections.blog-carousel.settings.size_title.label"
+		},
+		{
+			"type": "image_picker",
+			"id": "icon",
+			"label": "t:sections.blog-carousel.settings.icon.label"
+		},
+		{
+			"type": "textarea",
+			"id": "svg",
+			"label": "t:sections.blog-carousel.settings.svg.label"
+		},
+		{
+			"type": "select",
+			"id": "icon_position",
+			"default": "above",
+			"label": "t:sections.blog-carousel.settings.icon_position.label",
+			"options": [
+				{
+					"value": "above",
+					"label": "t:sections.blog-carousel.settings.icon_position.option_1.label"
+				},
+				{
+					"value": "under",
+					"label": "t:sections.blog-carousel.settings.icon_position.option_2.label"
+				}
+			]
+		},
+		{
+			"type": "blog",
+			"id": "blog",
+			"label": "t:sections.blog-carousel.settings.blog.label"
+		},
+		{
+			"type": "range",
+			"id": "total",
+			"min": 2,
+			"max": 20,
+			"step": 1,
+			"default": 10,
+			"label": "t:sections.blog-carousel.settings.total.label"
+		},
+		{
+			"type": "range",
+			"id": "columns",
+			"min": 1,
+			"max": 12,
+			"step": 1,
+			"default": 4,
+			"label": "t:sections.blog-carousel.settings.columns.label"
+		},
+		{
+			"type": "range",
+			"id": "column_gap",
+			"min": 0,
+			"max": 50,
+			"step": 1,
+			"default": 30,
+			"unit": "px",
+			"label": "t:sections.blog-carousel.settings.column_gap.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.blog-carousel.settings.header_carousel.content"
+		},
+		{
+			"type": "checkbox",
+			"id": "loop",
+			"default": false,
+			"label": "t:sections.blog-carousel.settings.loop.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "autoplay",
+			"default": false,
+			"label": "t:sections.blog-carousel.settings.autoplay.label"
+		},
+		{
+			"type": "range",
+			"id": "delay",
+			"min": 3,
+			"max": 20,
+			"step": 1,
+			"default": 5,
+			"unit": "s",
+			"label": "t:sections.blog-carousel.settings.delay.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "arrows",
+			"default": true,
+			"label": "t:sections.blog-carousel.settings.arrows.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "dots",
+			"default": true,
+			"label": "t:sections.blog-carousel.settings.dots.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.blog-carousel.settings.header_blog.content"
+		},
+		{
+			"type": "select",
+			"id": "text_align",
+			"options": [
+				{
+					"value": "left",
+					"label": "t:sections.blog-carousel.settings.text_align.options__1.label"
+				},
+				{
+					"value": "center",
+					"label": "t:sections.blog-carousel.settings.text_align.options__2.label"
+				},
+				{
+					"value": "right",
+					"label": "t:sections.blog-carousel.settings.text_align.options__3.label"
+				}
+			],
+			"default": "center",
+			"label": "t:sections.blog-carousel.settings.text_align.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_image",
+			"default": true,
+			"label": "t:sections.blog-carousel.settings.show_image.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_cate",
+			"default": true,
+			"label": "t:sections.blog-carousel.settings.show_cate.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_title",
+			"default": true,
+			"label": "t:sections.blog-carousel.settings.show_title.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_date",
+			"default": true,
+			"label": "t:sections.blog-carousel.settings.show_date.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_comment",
+			"default": true,
+			"label": "t:sections.blog-carousel.settings.show_comment.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_btn",
+			"default": true,
+			"label": "t:sections.blog-carousel.settings.show_btn.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.margin.header_margin.content"
+		},
+		{
+			"type": "range",
+			"id": "margin_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.margin.margin_top.label"
+		},
+		{
+			"type": "range",
+			"id": "margin_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.margin.margin_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.margin.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "margin_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.margin.margin_top.label"
+		},
+		{
+			"type": "range",
+			"id": "margin_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.margin.margin_bottom.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.blog-carousel.presets.name"
+		}
+	]
+}
+{% endschema %}

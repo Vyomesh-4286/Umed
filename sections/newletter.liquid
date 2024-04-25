@@ -1,0 +1,306 @@
+{%- liquid
+	assign section_id = '#shopify-section-' | append: section.id
+	assign full       = section.settings.full
+	assign src_tag    = 'src'
+
+	if settings.image_animation
+		assign src_tag = 'data-src'
+	endif
+-%}
+
+<div class="section-newletter">
+	<div class="{% if full %}stretch-section{% else %}container{% endif %}">	
+		<div class="box-newletter">
+			<div class="text-newletter">
+				<div class="title-newletter">
+					{% if section.settings.title != blank %}
+						<h2 class="umed-newletter-title">{{ section.settings.title }}</h2>
+					{% endif %}
+
+					{% if section.settings.description != blank %}
+						<p class="subtitle">{{ section.settings.description }}
+							{% if section.settings.text_brand != blank %}
+								<span class="text-brand">{{ section.settings.text_brand }}</span>
+							{% endif %}
+						</p>
+					{% endif %}
+				</div>
+
+				<div class="content-newletter">
+
+					{%- assign form_id = 'newletter-form-' | append: section.id -%}
+
+					{%- form 'customer', id: form_id, class: 'section-newletter' -%}
+						<input type="hidden" name="contact[tags]" value="newletter">
+
+						<div class="newletter-wrapper">
+
+							<input class="field-input"
+								id="input-form-{{ section.id }}"
+								type="email"
+								name="contact[email]"
+								value="{{ form.email }}"
+								aria-required="true"
+								autocorrect="off"
+								autocapitalize="off"
+								autocomplete="email"
+								{% if form.errors %}
+									autofocus
+									aria-invalid="true"
+									aria-describedby="contact-error"
+								{% elsif form.posted_successfully? %}
+									aria-describedby="contact-success"
+								{% endif %}
+								placeholder="{% if section.settings.email_placeholder != blank %} {{ section.settings.email_placeholder }} {% endif %}" required>
+
+								<div class="icon">
+									{%- render 'icon', code: 'submit-newletter' -%}
+								</div>
+
+								<button type="submit" class="button-newletter" name="commit" >
+									{{ section.settings.button_submit }}                         
+								</button>
+
+							{%- if form.errors -%}
+								<small class="message error-message" id="contact-error">
+									{%- render 'icon', code: 'error' -%}
+									{{- form.errors.translated_fields['email'] | capitalize -}}
+									{{- form.errors.messages['email'] -}}
+								</small>
+							{%- endif -%}
+						</div>
+
+						{%- if form.posted_successfully? -%}
+							<h3 class="message success-message" id="contact-success" tabindex="-1" autofocus>
+								{%- render 'icon', code: 'success' -%}
+							</h3>
+						{%- endif -%}
+					{%- endform -%}
+				</div>
+			</div>
+
+			{%- assign image = section.settings.image -%}
+
+				{%- if image != blank -%}
+					<img {% if settings.image_animation %}class="lazy-image" data-delay="0.15s"{% endif %}
+						{{ src_tag }}="{{ image | image_url: width: 900 }}"
+						alt="{{ image.alt | escape }}"
+						loading="lazy"
+						width="{{ image.width }}"
+						height="{{ image.height }}">
+				{%- else -%}
+					<img class="lazy-image" loading="lazy" style="display: none;" />
+				{%- endif -%}
+		</div>
+	</div>
+</div>
+
+<style>
+	{%- if section.settings.bg_image != blank -%}
+		{{ section_id }} .box-newletter {
+			background-image: url({{ section.settings.bg_image | image_url: width: 1584 }});
+			background-position: center;
+		}
+	{%- endif -%}
+
+	{{ section_id }} {
+		padding-top: {{ section.settings.padding_top_mobile }}px;
+		padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+	}
+
+	@media (min-width: 768px) {
+		{{ section_id }} {
+			padding-top: {{ section.settings.padding_top }}px;
+			padding-bottom: {{ section.settings.padding_bottom }}px;
+		}
+	}
+  
+	{%- if section.settings.description_color != blank -%}
+	  	{{ section_id }} .box-newletter .subtitle{
+	  		color: {{ section.settings.description_color }};
+	  	}  	
+	{%- endif -%}
+  
+	{%- if section.settings.title_newletter_color != blank -%}
+		{{ section_id }} .box-newletter .umed-newletter-title{
+			color: {{ section.settings.title_newletter_color }};
+		}  	
+	{%- endif -%}
+
+	{%- if section.settings.text_brand != blank -%}
+		{{ section_id }} .box-newletter .text-brand{
+			color: {{ section.settings.text_brand_color }};
+		}  	
+	{%- endif -%}
+
+  	{%- if section.settings.input_bg_image != blank -%}
+		{{ section_id }} .box-newletter .field-input {
+			background-image: url({{ section.settings.input_bg_image | image_url: width: 16 }});
+			background-repeat: no-repeat;
+			background-position: left;
+			background-position-x: 25px;
+		}
+	{%- endif -%}
+
+	{{ section_id }} .umed-newletter-title {
+		{%- if section.settings.size_title > 0 -%}
+			font-size: {{ section.settings.size_title }}px;
+		{%- endif -%}
+	}
+
+	{{ section_id }} .title-newletter .subtitle {
+		{%- if section.settings.size_description > 0 -%}
+			font-size: {{ section.settings.size_description }}px;
+		{%- endif -%}
+	}
+
+</style>
+
+{% schema %}
+{
+	"name": "t:sections.newletter.name",
+	"tag": "section",
+	"class": "newletter-section",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "full",
+			"default": false,
+			"label": "t:general.layout.full.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.newletter.settings.header.content"
+		},
+		{
+			"type": "image_picker",
+			"id": "bg_image",
+			"label": "t:sections.newletter.settings.bg_image.label"
+		},
+		{
+			"type": "textarea",
+			"id": "title",
+			"default": "Stay home & get your daily <br>needs from our shop",
+			"label": "t:sections.newletter.settings.title.label"
+		},
+		{
+			"type": "range",
+			"id": "size_title",
+			"min": 10,
+			"max": 100,
+			"step": 1,
+			"default": 40,
+			"label": "t:sections.newletter.settings.size_title.label"
+		},
+		{
+			"type": "color",
+			"id": "title_color",
+			"default": "#253D4E",
+			"label": "t:sections.newletter.settings.color.label"
+		},
+		{
+			"type": "textarea",
+			"id": "description",
+			"default": "Start You'r Daily Shopping with",
+			"label": "t:sections.newletter.settings.description.label"
+		},
+		{
+			"type": "range",
+			"id": "size_description",
+			"min": 10,
+			"max": 100,
+			"step": 1,
+			"default": 18,
+			"label": "t:sections.newletter.settings.size_description.label"
+		},
+		{
+			"type": "color",
+			"id": "description_color",
+			"label": "t:sections.newletter.settings.color.label"
+		},
+		{
+			"type": "textarea",
+			"id": "text_brand",
+			"default": "Umed Mart",
+			"label": "t:sections.newletter.settings.text_brand.label"
+		},
+		{
+			"type": "color",
+			"id": "text_brand_color",
+			"default": "#3BB77E",
+			"label": "t:sections.newletter.settings.color.label"
+		},
+		{
+			"type": "text",
+			"id": "email_placeholder",
+			"default": "Your email address",
+			"label": "t:sections.newletter.settings.email_placeholder.label"
+		},
+		{
+			"type": "text",
+			"id": "button_submit",
+			"default": "Subscribe",
+			"label": "t:sections.newletter.settings.button_submit.label"
+		},
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "t:sections.newletter.settings.image.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+
+	"presets": [
+		{
+			"name": "t:sections.newletter.presets.name"
+		}
+	]
+}
+{% endschema %}

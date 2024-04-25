@@ -1,0 +1,198 @@
+.box-breadcrumb .chooise-images {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.box-breadcrumb .chooise-images .breadcrumb-image img {
+  width: 240px;
+  height: 240px;
+  object-fit: contain;
+}
+
+.collection-page-section .sidebar .details-summary {
+  width: fit-content;
+  gap: 20px;
+  padding: 12px 20px !important;
+  border: 1px solid #646464;
+  border-radius: 10px;
+}
+
+.collection-page-section .content .products.row .grid {
+  gap: 40px 0;
+}
+
+:root {
+    --range-bar-color: #000;
+    --range-progress-bar-color: #53ac53;
+    --range-thumb-color: var(--range-progress-bar-color);
+}
+
+* {
+    box-sizing: border-box;
+    font-family: system-ui;
+}
+
+h4 {
+    margin: 0;
+}
+
+.sliders_control {
+    position: relative;
+    min-height: 50px;
+}
+
+.numbers {
+    display: flex;
+    margin-bottom: 10px;
+    justify-content: space-between;
+}
+
+.range-container {
+    display: flex;
+    flex-direction: column;
+    width: 75%;
+    position: relative;
+    margin: 0 auto;
+}
+
+.range-container input[type="range"] {
+    --left-per: 0%;
+    --right-per: 100%;
+    position: absolute;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    outline: none;
+    pointer-events: none;
+}
+
+.range-container input[type="range"]::-webkit-slider-runnable-track {
+    opacity: 1;
+    height: 0.5rem;
+    border: none;
+    box-shadow: none;
+    border-radius: 9999px;
+}
+
+.range-container input[type="range"].left-range::-webkit-slider-runnable-track {
+    background: linear-gradient(90deg, var(--range-bar-color) var(--left-per), var(--range-progress-bar-color) var(--left-per), var(--range-progress-bar-color) var(--right-per), var(--range-bar-color) var(--right-per));
+}
+
+.range-container input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    /* Override default look */
+    appearance: none;
+    margin-top: -8px;
+    /* Centers thumb on the track */
+    background-color: var(--range-thumb-color);
+    height: 24px;
+    width: 24px;
+    pointer-events: all;
+    border-radius: 1rem;
+    outline: 5px solid white;
+    outline-offset: -20px;
+    box-shadow: 0 0 10px var(--range-thumb-color);
+    cursor: pointer;
+}
+
+#range-two {
+    --range-progress-bar-color: #6253ac;
+    --range-thumb-color: var(--range-progress-bar-color);
+}
+
+#range-three,
+#range-four,
+#range-five {
+    --range-progress-bar-color: #ac538e;
+    --range-thumb-color: var(--range-progress-bar-color);
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 40ch;
+    margin: 0 auto;
+    padding: 1rem;
+    border: 3px solid #e05252;
+    border-radius: 1rem;
+    outline: 2px solid #b87a7a;
+    outline-offset: -8px;
+}
+
+.info>div {
+    display: grid;
+    grid-template-columns: 15ch 1fr;
+}
+
+#info-size-range {
+    display: grid;
+    grid-template-rows: 3ch 1fr;
+}
+
+#info-size-range>div {
+    display: grid;
+    grid-template-columns: 3ch 1fr;
+}
+
+.collection-page-section .sidebar .details-content {
+    margin-top: 40px; 
+      padding: 5px 0; 
+}
+
+.noUi-target {
+    background-color: #a1a1a1!important;
+    margin-bottom: 20px !important;
+    height: 3px !important;
+}
+.noUi-horizontal .noUi-origin {
+    height: -webkit-fill-available !important; 
+}
+.noUi-connect {
+    background-color: #FD9A00 !important;
+}
+.noUi-handle {
+    width: 11px !important;
+    height: 11px !important;
+    border-radius: 100% !important;
+    background-color: #FD9A00 !important;
+}
+.noUi-horizontal .noUi-handle {
+    top: 50% !important;
+    transform: translateY(-50%);
+}
+
+.collection-page-section .range-slider .price-from .price-currency, .collection-page-section .range-slider .price-to .price-currency {
+    width: fit-content !important;
+    background: transparent !important;
+    border: none !important;
+    font-size: 16px;
+    font-weight: 500;
+    font-family: 'Roboto';
+    height: fit-content;
+    color: #000;
+}
+.collection-page-section .range-slider .price-from input, .collection-page-section .range-slider .price-to input {
+    height: fit-content!important;
+    padding: 0 0 0 10px !important;
+    border: none!important;
+    width: fit-content!important;
+    box-shadow: none!important;
+    color: #000;
+    font-size: 16px;
+    font-weight: 500 !important;
+    font-family: Roboto;
+}
+
+@media (max-width: 767.98px) {
+  .box-breadcrumb .chooise-images img {
+    width: 150px !important;
+    height: 150px !important;
+    object-fit: cover;
+}
+}

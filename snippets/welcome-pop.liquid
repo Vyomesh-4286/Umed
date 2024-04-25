@@ -1,0 +1,62 @@
+<div class="product-summary-popup">
+  <div class="product-summary-inner">
+    {%- for block in section.blocks -%}
+      {% if block.settings.heading != blank %}
+        <div class="welcome-sum-item" data-{{ block.id }}>
+          <h1>{{ block.settings.heading }}</h1>
+          {% if block.settings.form_description != blank %}
+            <div class="welcome-popup-decsription">
+              {{ block.settings.form_description }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+      {%- assign form_id = 'newsletter-form-' | append: section.id -%}
+      {%- form 'customer', id: form_id, class: 'form-newsletter' -%}
+        <input type="hidden" name="contact[tags]" value="newsletter">
+        <div class="newsletter-wrapper">
+          <div class="input-wrapper">
+            <input
+              class="field-input"
+              id="input-form-{{ section.id }}"
+              type="email"
+              name="contact[email]"
+              value="{{ form.email }}"
+              aria-required="true"
+              autocorrect="off"
+              autocapitalize="off"
+              autocomplete="email"
+              {% if form.errors %}
+                autofocus
+                aria-invalid="true"
+                aria-describedby="contact-error"
+              {% elsif form.posted_successfully? %}
+                aria-describedby="contact-success"
+              {% endif %}
+              placeholder="{% if block.settings.email_placeholder != blank %} {{ block.settings.email_placeholder }} {% endif %}"
+              required
+            >
+          </div>
+          <button type="submit" class="button-newletter" name="commit">
+            {{ block.settings.button_submit }}
+          </button>
+
+          {%- if form.errors -%}
+            <small class="message error-message" id="contact-error">
+              {%- render 'icon', code: 'error' -%}
+              {{- form.errors.translated_fields.email | capitalize -}}
+              {{- form.errors.messages.email -}}
+            </small>
+          {%- endif -%}
+        </div>
+
+        {%- if form.posted_successfully? -%}
+          <h3 class="message success-message" id="contact-success" tabindex="-1" autofocus>
+            {%- render 'icon', code: 'success' -%}
+            {{- 'newsletter.success' | t -}}
+          </h3>
+        {%- endif -%}
+      {%- endform -%}
+    {%- endfor -%}
+  </div>
+</div>

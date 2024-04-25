@@ -1,0 +1,261 @@
+{%- liquid
+  assign section_id = '#shopify-section-' | append: section.id
+  assign product_list = false
+  assign collection = section.settings.collection
+  assign customers = section.settings.virtual_customers | replace: ' |', '|' | replace: '| ', '|' | replace: ' | ', '|' | split: '|'
+  assign times = section.settings.virtual_times | replace: ' |', '|' | replace: '| ', '|' | replace: ' | ', '|' | split: '|'
+
+  if collection != blank and collection.all_products_count > 0
+    assign product_list = collection.products
+  endif
+
+  if section.settings.home_page and template.name == 'index'
+    assign display = true
+  endif
+
+  if section.settings.collection_page and template.name == 'collection' or template.name == 'list-collections'
+    assign display = true
+  endif
+
+  if section.settings.product_page and template.name == 'product'
+    assign display = true
+  endif
+
+  if section.settings.blog_page and template.name == 'blog'
+    assign display = true
+  endif
+
+  if section.settings.post_page and template.name == 'article'
+    assign display = true
+  endif
+
+  if section.settings.cart_page and template.name == 'cart'
+    assign display = true
+  endif
+
+  if section.settings.other_page and template.name == 'page' and template.name != 'index'
+    assign display = true
+  endif
+-%}
+
+{%- if product_list and display -%}
+  <style>
+    {{ section_id }} .underline-animated {
+    	transition: width 0.3s ease;
+    	animation: underline-animated {{ section.settings.time_display }}s linear;
+    }
+  </style>
+
+  <div class="sales-notification {{ section.settings.position }}">
+    <template data-options>
+      { "time_init": {{ section.settings.time_init }}, "time_display": {{ section.settings.time_display }}, "time_next":
+      {{ section.settings.time_next }}, "time_total":
+      {{ section.settings.time_display | plus: section.settings.time_next }}, "virtual_customers":
+      {{ customers | json }}, "virtual_times": {{ times | json }}, "loading_bar": {{ section.settings.loading_bar }},
+      "purchased": " {{ section.settings.purchased | strip }}" }
+    </template>
+
+    <div data-items>
+      {%- for product in product_list limit: section.settings.limit -%}
+        <div class="sn-item">
+          <span class="sn-close">
+            {%- render 'icon', code: 'close-thin' -%}
+          </span>
+
+          <a class="sn-image-wrap" href="{{ product.url }}">
+            {%- liquid
+              if product.featured_media
+                echo product.featured_media | image_url: width: 150 | image_tag: loading: 'lazy', class: 'sn-image'
+              else
+                capture index
+                  cycle 1, 2, 3, 4, 5, 6
+                endcapture
+
+                echo 'product-' | append: index | placeholder_svg_tag: 'placeholder-svg sn-image'
+              endif
+            -%}
+          </a>
+
+          <div class="sn-content">
+            <span class="sn-customer"></span>
+
+            <a class="sn-product-title" href="{{ product.url }}">{{- product.title -}}</a>
+
+            <div class="sn-foot">
+              <span class="sn-time"></span>
+
+              {%- if section.settings.verified != blank -%}
+                <span class="sn-verified">
+                  {%- render 'icon', code: 'checkmark-circle' %}
+                  {{- section.settings.verified | strip -}}
+                </span>
+              {%- endif -%}
+            </div>
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+
+    <div class="sn-inner"></div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+	"name": "t:sections.sales-notification.name",
+	"class": "sales-notification-section",
+	"settings": [
+		{
+			"type": "collection",
+			"id": "collection",
+			"label": "t:sections.sales-notification.settings.collection.label"
+		},
+		{
+			"type": "select",
+			"id": "position",
+			"default": "bottom-left",
+			"options": [
+				{
+					"value": "bottom-left",
+					"label": "t:sections.sales-notification.settings.position.options.option_1.label"
+				},
+				{
+					"value": "bottom-right",
+					"label": "t:sections.sales-notification.settings.position.options.option_2.label"
+				}
+			],
+			"label": "t:sections.sales-notification.settings.position.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "loading_bar",
+			"default": true,
+			"label": "t:sections.sales-notification.settings.loading_bar.label"
+		},
+		{
+			"type": "range",
+			"id": "limit",
+			"min": 1,
+			"max": 50,
+			"step": 1,
+			"default": 15,
+			"label": "t:sections.sales-notification.settings.limit.label"
+		},
+		{
+			"type": "text",
+			"id": "purchased",
+			"default": "purchased",
+			"label": "t:sections.sales-notification.settings.purchased.label"
+		},
+		{
+			"type": "text",
+			"id": "verified",
+			"default": "Verified",
+			"label": "t:sections.sales-notification.settings.verified.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.sales-notification.settings.header_time.content"
+		},
+		{
+			"type": "range",
+			"id": "time_init",
+			"min": 1,
+			"max": 100,
+			"step": 1,
+			"default": 3,
+			"label": "t:sections.sales-notification.settings.time_init.label",
+			"info": "t:sections.sales-notification.settings.time_init.info"
+		},
+		{
+			"type": "range",
+			"id": "time_display",
+			"min": 1,
+			"max": 100,
+			"step": 1,
+			"default": 5,
+			"label": "t:sections.sales-notification.settings.time_display.label",
+			"info": "t:sections.sales-notification.settings.time_display.info"
+		},
+		{
+			"type": "range",
+			"id": "time_next",
+			"min": 1,
+			"max": 100,
+			"step": 1,
+			"default": 5,
+			"label": "t:sections.sales-notification.settings.time_next.label",
+			"info": "t:sections.sales-notification.settings.time_next.info"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.sales-notification.settings.header_virtual.content"
+		},
+		{
+			"type": "textarea",
+			"id": "virtual_customers",
+			"default": "Alice (California) | Peter (Ohaio) | Yelan (New York)",
+			"label": "t:sections.sales-notification.settings.virtual_customers.label",
+			"info": "t:sections.sales-notification.settings.virtual_customers.info"
+		},
+		{
+			"type": "textarea",
+			"id": "virtual_times",
+			"default": "4 hours ago | 13 days ago | 1 day ago | 25 minutes ago | 9 hours ago",
+			"label": "t:sections.sales-notification.settings.virtual_times.label",
+			"info": "t:sections.sales-notification.settings.virtual_times.info"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.sales-notification.settings.header_display.content"
+		},
+		{
+			"type": "checkbox",
+			"id": "home_page",
+			"default": true,
+			"label": "t:sections.sales-notification.settings.home_page.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "collection_page",
+			"default": true,
+			"label": "t:sections.sales-notification.settings.collection_page.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "product_page",
+			"default": true,
+			"label": "t:sections.sales-notification.settings.product_page.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "blog_page",
+			"default": true,
+			"label": "t:sections.sales-notification.settings.blog_page.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "post_page",
+			"default": true,
+			"label": "t:sections.sales-notification.settings.post_page.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "cart_page",
+			"default": true,
+			"label": "t:sections.sales-notification.settings.cart_page.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "other_page",
+			"default": true,
+			"label": "t:sections.sales-notification.settings.other_page.label"
+		}
+	],
+  "presets": [
+    {
+      "name":"Sale Notifications"
+    }
+  ]
+}
+{% endschema %}

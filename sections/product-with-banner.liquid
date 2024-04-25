@@ -1,0 +1,359 @@
+{%- liquid
+	assign section_id    = '#shopify-section-' | append: section.id
+	assign product_list  = false
+	assign full          = section.settings.full
+	assign show_more_url = '/collections/all'
+	assign src_tag       = 'src'
+
+	if settings.image_animation
+		assign src_tag = 'data-src'
+	endif
+
+	if section.settings.collection != blank and section.settings.collection.all_products_count > 0
+		assign show_more_url = section.settings.collection.url
+		assign product_list  = section.settings.collection.products
+	endif
+-%}
+
+<style>
+	{{ section_id }} {
+		padding-top: {{ section.settings.padding_top_mobile }}px;
+		padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+		margin-top: {{ section.settings.margin_top_mobile }}px;
+		margin-bottom: {{ section.settings.margin_bottom_mobile }}px;
+	}
+
+	{{ section_id }} .countdown-time {
+		background-color: {{ section.settings.countdown_bg_color }};
+		color: {{ section.settings.countdown_text_color }};
+	}
+
+	{{ section_id }} .title-wrapper .title {
+		font-size: {{ section.settings.title_size | times: 0.85 }}px;
+	}
+
+	@media (min-width: 768px) {
+		{{ section_id }} {
+			padding-top: {{ section.settings.padding_top }}px;
+			padding-bottom: {{ section.settings.padding_bottom }}px;
+			margin-top: {{ section.settings.margin_top }}px;
+			margin-bottom: {{ section.settings.margin_bottom }}px;
+		}
+
+		{{ section_id }} .title-wrapper .title {
+			font-size: {{ section.settings.title_size }}px;
+		}
+	}
+</style>
+
+<div class="{% if full %}stretch-section{% else %}container{% endif %}">
+	<div class="title-wrapper">
+		{%- if section.settings.title != blank -%}
+			<h2 class="title">{{- section.settings.title | escape -}}</h2>
+		{%- endif -%}
+
+		{%- if section.settings.show_countdown -%}
+			<div class="countdown-time-wrap flat-countdown hidden">
+				<div class="countdown-time" data-time="{{ section.settings.countdown_time | escape }}">
+					<div class="time-block">
+						<span class="time-number days"></span>
+					</div>
+
+					<div class="time-block">
+						<span class="time-number hours"></span>
+					</div>
+
+					<div class="time-block">
+						<span class="time-number minutes"></span>
+					</div>
+
+					<div class="time-block">
+						<span class="time-number seconds"></span>
+					</div>
+				</div>
+			</div>
+		{%- endif -%}
+
+		{%- if section.settings.view_all != blank -%}
+			<a href="{{ show_more_url }}" class="link-title">
+				{{- section.settings.view_all -}}
+				<span class="link-arrow">{%- render 'icon', code: 'chevron-right' -%}</span>
+			</a>
+		{%- endif -%}
+	</div>
+
+	<ul class="grid grid-{% if section.settings.show_banner and section.settings.columns < 12 %}{{ section.settings.columns | plus: 1 }}{% else %}{{ section.settings.columns }}{% endif %} grid-tablet-3 grid-mobile-2" role="list">
+		{%- if section.settings.show_banner -%}
+			<li class="grid-item">
+				<div class="banner-wrap">
+					{%- if section.settings.banner_url != blank -%}
+						<a href="{{ section.settings.banner_url }}" class="banner-url"></a>
+					{%- endif -%}
+
+					{%- assign banner_image = section.settings.banner_image -%}
+
+					{%- if banner_image != blank -%}
+						<img {% if settings.image_animation %}class="lazy-image" data-delay="0.15s"{% endif %}
+							{{ src_tag }}="{{ banner_image | image_url: width: section.settings.banner_image.width, height: section.settings.banner_image.height }}"
+							alt="{{ banner_image.alt | escape }}"
+							loading="lazy"
+							width="{{ banner_image.width }}"
+							height="{{ banner_image.height }}">
+					{%- else -%}
+						{{- 'collection-1' | placeholder_svg_tag: 'placeholder-svg' -}}
+					{%- endif -%}
+				</div>
+			</li>
+		{%- endif -%}
+
+		{%- for product in product_list limit: section.settings.columns -%}
+			<li class="grid-item">
+				{%- liquid
+					capture for_cycle
+						case section.settings.columns
+							when 2
+								cycle 2, 3
+							when 3
+								cycle 2, 3, 4
+							when 4
+								cycle 2, 3, 4, 5
+							when 5
+								cycle 2, 3, 4, 5, 6
+							when 6
+								cycle 2, 3, 4, 5, 6, 7
+							when 7
+								cycle 2, 3, 4, 5, 6, 7, 8
+							when 8
+								cycle 2, 3, 4, 5, 6, 7, 8, 9
+							when 9
+								cycle 2, 3, 4, 5, 6, 7, 8, 9, 10
+							when 10
+								cycle 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+							when 11
+								cycle 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+							when 12
+								cycle 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
+						endcase
+					endcapture
+
+					render 'product-card', product: product, cycle: for_cycle
+				-%}
+			</li>
+		{%- else -%}
+			{%- for i in (1..3) -%}
+				{%- liquid
+					capture index
+						cycle 1, 2, 3, 4, 5, 6
+					endcapture
+				-%}
+
+				<li class="grid-item">
+					{%- render 'product-card-placeholder', index: index -%}
+				</li>
+			{%- endfor -%}
+		{%- endfor -%}
+	</ul>
+</div>
+
+{% schema %}
+{
+	"name": "t:sections.product-with-banner.name",
+	"tag": "section",
+	"class": "product-banner-section has-product-card",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "full",
+			"default": false,
+			"label": "t:sections.product-with-banner.settings.full.label"
+		},
+		{
+			"type": "text",
+			"id": "title",
+			"default": "Organization",
+			"label": "t:sections.product-with-banner.settings.title.label"
+		},
+		{
+			"type": "range",
+			"id": "title_size",
+			"min": 10,
+			"max": 100,
+			"step": 1,
+			"default": 30,
+			"unit": "px",
+			"label": "t:sections.product-with-banner.settings.title_size.label"
+		},
+		{
+			"type": "collection",
+			"id": "collection",
+			"label": "t:sections.product-with-banner.settings.collection.label"
+		},
+		{
+			"type": "text",
+			"id": "view_all",
+			"default": "See All Products",
+			"label": "t:sections.product-with-banner.settings.view_all.label"
+		},
+		{
+			"type": "range",
+			"id": "columns",
+			"min": 1,
+			"max": 12,
+			"step": 1,
+			"default": 3,
+			"label": "t:sections.product-with-banner.settings.columns.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.product-with-banner.settings.header_countdown.content"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_countdown",
+			"default": true,
+			"label": "t:sections.product-with-banner.settings.show_countdown.label"
+		},
+		{
+			"type": "text",
+			"id": "countdown_time",
+			"default": "6/11/22 9:59:59",
+			"label": "t:sections.product-with-banner.settings.countdown_time.label",
+			"info": "t:sections.product-with-banner.settings.countdown_time.info"
+		},
+		{
+			"type": "color",
+			"id": "countdown_bg_color",
+			"default": "#f7ede5",
+			"label": "t:sections.product-with-banner.settings.countdown_bg_color.label"
+		},
+		{
+			"type": "color",
+			"id": "countdown_text_color",
+			"default": "#7f6d4d",
+			"label": "t:sections.product-with-banner.settings.countdown_text_color.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.product-with-banner.settings.header_banner.content"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_banner",
+			"default": true,
+			"label": "t:sections.product-with-banner.settings.show_banner.label"
+		},
+		{
+			"type": "image_picker",
+			"id": "banner_image",
+			"label": "t:sections.product-with-banner.settings.banner_image.label"
+		},
+		{
+			"type": "url",
+			"id": "banner_url",
+			"default": "/collections/all",
+			"label": "t:sections.product-with-banner.settings.banner_url.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.margin.header_margin.content"
+		},
+		{
+			"type": "range",
+			"id": "margin_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.margin.margin_top.label"
+		},
+		{
+			"type": "range",
+			"id": "margin_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.margin.margin_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.margin.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "margin_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.margin.margin_top.label"
+		},
+		{
+			"type": "range",
+			"id": "margin_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.margin.margin_bottom.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.product-with-banner.presets.name"
+		}
+	]
+}
+{% endschema %}

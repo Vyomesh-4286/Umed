@@ -1,0 +1,74 @@
+
+.popup-inner {
+    display: flex;
+}
+.popup-countdown-visit-website .popup-inner {
+    padding: 0;
+    border-radius: 20px;
+}
+.popup-countdown-visit-website .popup-inner .welcome-popup-image img {
+    border-radius: 20px;
+}
+.popup-content {
+    position: absolute!important;
+    top: 10px;
+    left: 30px;
+    width: 400px;
+    height: 100%!important;
+    background: transparent !important;
+}
+.welcome-sum-item h1 {
+    font-weight: 700;
+    font-size: 55px;
+    line-height: normal;
+    color: #1d1d1d;
+}
+.welcome-popup-decsription p {
+    font-size: 18px;
+    line-height: normal;
+    font-weight: 400;
+    margin-bottom: 20px;
+    font-family: Roboto, sans-serif;
+  color: #000000;
+}
+.newsletter-wrapper .input-wrapper input {
+    border-radius: 20px;
+    font-family: Roboto, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+      border: 1px solid #e1e1e1;
+}
+.newsletter-wrapper .input-wrapper input::placeholder {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+@media (max-width: 991.98px) {
+  .popup-countdown-visit-website .close-popup-countdown {
+    right: 1.5rem;
+    top: 1.5rem;
+}
+.newsletter-wrapper .input-wrapper input {
+  width: 100%;
+}
+  .popup-countdown-visit-website .popup-inner {
+    flex-direction: column;
+}
+  .popup-countdown-visit-website .button-newletter {
+    width: 100%;
+    display: block;
+    position: relative;
+    padding: 10px;
+    font-size: 16px;
+    margin-top: 10px;
+}
+  .welcome-sum-item h1 {
+    font-size: 42px;
+}
+  .popup-content {
+    position: relative !important;
+    width: 100%;
+    top: auto;
+    left: auto;
+}
+}

@@ -1,0 +1,376 @@
+{%- liquid
+	assign section_id = '#shopify-section-' | append: section.id
+	assign full       = section.settings.full
+-%}
+
+<div class="{% if full %}stretch-section{% else %}container{% endif %}">
+	<div class="section-image-banner text-{{ section.settings.align }} {% if section.settings.class != blank %}{{ section.settings.class }}{% endif %}"
+	style="background-image: url( {% if section.settings.image != blank %} {{ section.settings.image | image_url: width: 1920 }} {% endif %})" >
+		<div class="{% if full %}stretch-section{% else %}container{% endif %}">
+			<div class="banner-box">
+				{%- for block in section.blocks -%}
+					<div class="banner-item" {{ block.shopify_attributes }}>
+						{%- case block.type -%}
+							{%- when '@app' -%}
+								{%- render block -%}
+							{%- when 'heading' -%}
+								<p class="heading font-{{ block.settings.font_style }}">{{ block.settings.heading }}</p>
+							{%- when 'subtitle' -%}
+								<div class="subtitle">{{ block.settings.sub-title }}</div>
+							{%- when 'image-title' -%}
+								<div class="image-banner">
+									{% if block.settings.block_img != blank %}
+										{{ block.settings.block_img | image_url: width: 470 | image_tag: loading: 'lazy' }}
+									{% else %}
+										{{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+									{% endif %}
+								</div>
+							{%- when 'button' -%}
+								<a href="{{ block.settings.btn_url }}" class="btn-banner">{{ block.settings.btn_name }}</a>
+						{%- endcase -%}
+					</div>
+				{%- endfor -%}
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	{{ section_id }} .section-image-banner {
+		padding-top: {{ section.settings.padding_top_mobile }}px;
+		margin-top: {{ section.settings.margin_top_mobile }}px;
+		padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+		margin-bottom: {{ section.settings.margin_bottom_mobile }}px;
+		background-repeat: no-repeat;
+		background-size: cover;
+		background-position: center center;
+	}
+
+	@media (min-width: 768px) {
+		{{ section_id }} .section-image-banner {
+			padding-top: {{ section.settings.padding_top }}px;
+			margin-top: {{ section.settings.margin_top }}px;
+			padding-bottom: {{ section.settings.padding_bottom }}px;
+			margin-bottom: {{ section.settings.margin_bottom }}px;
+		}
+	}
+
+	{% if section.settings.color_text != blank %}
+		{{ section_id }} .heading,
+		{{ section_id }} .subtitle{
+			color: {{ section.settings.color_text }};
+		}
+	{% endif %}
+
+	{%- for block in section.blocks -%}
+		{%- case block.type -%}
+			{%- when 'heading' -%}
+				@media (min-width: 768px){
+					{{ section_id }} .heading {
+						font-size: {{ block.settings.size }}px;
+					}
+				}
+
+				{{ section_id }} .heading {
+					font-size: {{ block.settings.size_mobile }}px;
+				}
+					
+			{%- when 'subtitle' -%}
+				{{ section_id }} .subtitle {
+					{%- if block.settings.size > 0 -%}
+						font-size: {{ block.settings.size }}px;
+					{%- endif -%}
+				}
+			{%- when 'button' -%}
+				{{ section_id }} .btn-banner{
+					color:  {{ block.settings.btn_color }};
+					background-color: {{ block.settings.btn_bgcolor }};
+				}
+				{{ section_id }} .btn-banner:hover{
+					color:  {{ block.settings.btn_color_hover }};
+					background-color: {{ block.settings.btn_bgcolor_hover }};
+				}
+
+		{%- endcase -%}
+	{%- endfor -%}
+</style>
+
+{% schema %}
+{
+	"name": "t:sections.image-banner.name",
+	"tag": "section",
+	"class": "image-banner-section",
+	"settings": [
+		{
+			"type": "text",
+			"id": "class",
+			"label": "t:sections.heading.settings.class.label"
+		},
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "t:sections.image-banner.settings.image.label"
+		},
+		{
+			"type": "color",
+			"id": "color_text",
+			"label": "t:sections.image-banner.settings.color_text.label"
+		},
+		{
+			"type": "select",
+			"id": "align",
+			"options": [
+				{
+					"value": "left",
+					"label": "t:sections.image-banner.settings.align.options__1.label"
+				},
+				{
+					"value": "center",
+					"label": "t:sections.image-banner.settings.align.options__2.label"
+				},
+				{
+					"value": "right",
+					"label": "t:sections.image-banner.settings.align.options__3.label"
+				}
+			],
+			"default": "center",
+			"label": "t:sections.image-banner.settings.align.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "full",
+			"default": true,
+			"label": "t:sections.image-banner.settings.full.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.margin.header_margin.content"
+		},
+		{
+			"type": "range",
+			"id": "margin_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.margin.margin_top.label"
+		},
+		{
+			"type": "range",
+			"id": "margin_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.margin.margin_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.margin.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "margin_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.margin.margin_top.label"
+		},
+		{
+			"type": "range",
+			"id": "margin_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.margin.margin_bottom.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 500,
+			"step": 5,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 500,
+			"step": 5,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 500,
+			"step": 5,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 500,
+			"step": 5,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"blocks": [
+		{
+			"type": "heading",
+			"name": "t:sections.image-banner.blocks.heading.name",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "textarea",
+					"id": "heading",
+					"default": "A modern viewpoint of crafting",
+					"label": "t:sections.image-banner.blocks.heading.settings.heading.label"
+				},
+				{
+					"type": "select",
+					"id": "font_style",
+					"label": "t:sections.image-banner.blocks.heading.settings.font_style.label",
+					"default": "style1",
+					"options": [
+						{
+							"value": "style1",
+							"label": "t:sections.image-banner.blocks.heading.settings.style1.label"
+						},
+						{
+							"value": "style2",
+							"label": "t:sections.image-banner.blocks.heading.settings.style2.label"
+						}
+					]
+				},
+				{
+					"type": "number",
+					"id": "size",
+					"default": 60,
+					"label": "t:sections.image-banner.blocks.heading.settings.size.label"
+				},
+				{
+					"type": "number",
+					"id": "size_mobile",
+					"default": 50,
+					"label": "t:sections.image-banner.blocks.heading.settings.size_mobile.label"
+				}
+			]
+		},
+		{
+			"type": "subtitle",
+			"name": "t:sections.image-banner.blocks.paragraph.name",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "textarea",
+					"id": "sub-title",
+					"default": "A modern viewpoint of crafting",
+					"label": "t:sections.image-banner.blocks.paragraph.settings.subtitle.label"
+				},
+				{
+					"type": "number",
+					"id": "size",
+					"default": 20,
+					"label": "t:sections.image-banner.blocks.paragraph.settings.size.label"
+				}
+			]
+		},
+		{
+			"type": "image-title",
+			"name": "t:sections.image-banner.blocks.image-title.name",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "image_picker",
+					"id": "block_img",
+					"label": "t:sections.image-banner.blocks.image-title.settings.block_img.label"
+				}
+			]
+		},
+		{
+			"type": "button",
+			"name": "t:sections.image-banner.blocks.button.name",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "text",
+					"id": "btn_name",
+					"default": "Shop Now",
+					"label": "t:sections.image-banner.blocks.button.settings.btn_name.label"
+				},
+				{
+					"type": "url",
+					"id": "btn_url",
+					"default": "/collections/all",
+					"label": "t:sections.image-banner.blocks.button.settings.btn_url.label"
+				},
+				{
+					"type": "color",
+					"id": "btn_color",
+					"default": "#fff",
+					"label": "t:sections.image-banner.blocks.button.settings.btn_color.label"
+				},
+				{
+					"type": "color",
+					"id": "btn_color_hover",
+					"default": "#fff",
+					"label": "t:sections.image-banner.blocks.button.settings.btn_color_hover.label"
+				},
+				{
+					"type": "color",
+					"id": "btn_bgcolor",
+					"default": "#ce373a",
+					"label": "t:sections.image-banner.blocks.button.settings.btn_bgcolor.label"
+				},
+				{
+					"type": "color",
+					"id": "btn_bgcolor_hover",
+					"default": "#2d3448",
+					"label": "t:sections.image-banner.blocks.button.settings.btn_bgcolor_hover.label"
+				}
+			]
+		},
+		{
+			"type": "@app"
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.image-banner.presets.name",
+			"blocks": [
+				{
+					"type": "heading"
+				},
+				{
+					"type": "subtitle"
+				}
+			]
+		}
+	]
+}
+{% endschema %}

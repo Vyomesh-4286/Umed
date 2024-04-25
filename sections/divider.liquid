@@ -1,0 +1,116 @@
+{%- liquid
+	assign section_id = '#shopify-section-' | append: section.id
+	assign full       = section.settings.full
+-%}
+
+<style>
+	{{ section_id }} {
+		margin-top: {{ section.settings.padding_top_mobile }}px;
+		margin-bottom: {{ section.settings.padding_bottom_mobile }}px;
+	}
+
+	{{ section_id }} .divider-panel {
+		width: 100%;
+		min-height: {{ section.settings.height }}px;
+
+		{%- if section.settings.color != blank -%}
+			background-color: {{ section.settings.color }};
+		{%- endif -%}
+	}
+
+	@media (min-width: 768px) {
+		{{ section_id }} {
+			margin-top: {{ section.settings.padding_top }}px;
+			margin-bottom: {{ section.settings.padding_bottom }}px;
+		}
+	}
+</style>
+
+<div class="{% if full %}stretch-section{% else %}container{% endif %}">
+	<div class="divider-panel"></div>
+</div>
+
+{% schema %}
+{
+	"name": "t:sections.divider.name",
+	"class": "divider-section",
+	"tag": "section",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "full",
+			"default": false,
+			"label": "t:sections.divider.settings.full.label"
+		},
+		{
+			"type": "color",
+			"id": "color",
+			"default": "#f3f3f3",
+			"label": "t:sections.divider.settings.color.label"
+		},
+		{
+			"type": "range",
+			"id": "height",
+			"min": 1,
+			"max": 10,
+			"step": 1,
+			"default": 1,
+			"unit": "px",
+			"label": "t:sections.divider.settings.height.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 10,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 10,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 10,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 10,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.divider.presets.name"
+		}
+	]
+}
+{% endschema %}

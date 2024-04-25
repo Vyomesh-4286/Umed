@@ -1,0 +1,385 @@
+<div class="sticky-sidebar">
+  {%- liquid
+    assign show_count = section.settings.show_count
+    assign filter_mode = section.settings.filter_mode
+
+    assign active_filters_count = 0
+    for filter in collection.filters
+      if filter.type == 'list'
+        assign active_filters_count = active_filters_count | plus: filter.active_values.size
+      elsif filter.type == 'price_range' and filter.min_value.value or filter.max_value.value
+        assign active_filters_count = active_filters_count | plus: 1
+      endif
+    endfor
+  -%}
+  {% comment %} Quick links {% endcomment %}
+  {%- if section.settings.quick_links != blank
+    and section.settings.quick_links.size > 0
+    or section.settings.title_quick_links != blank
+  -%}
+    <div class="sidebar-item list-item-sidebar quick-links-wrapper border-radius-theme">
+      {% if section.settings.title_quick_links != blank %}
+        <h3 class="heading">{{ section.settings.title_quick_links }}</h3>
+      {% endif %}
+      <ul class="quick-links">
+        {%- for link in section.settings.quick_links.links -%}
+          <li class="link-item">
+            {%- liquid
+              assign menu_icon = link.title | strip | split: '[' | last | remove: ']'
+
+              capture has_icon
+                render 'icon', code: menu_icon
+              endcapture
+            -%}
+
+            <a class="link-heading link{% if link.active %} current{% endif %}" href="{{ link.url }}">
+              {%- if has_icon != blank -%}
+                <span class="icon icon-{{ menu_icon | handle }}">{{- has_icon -}}</span>
+              {%- endif -%}
+
+              {{ link.title | escape | split: '[' | first }}
+            </a>
+
+            {% if link.type == 'collection_link' and show_count %}
+              <span class="products_count number" data-number="{{ link.object.products_count }}">
+                {{ link.object.products_count }}
+              </span>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endif -%}
+
+  {% comment %} Wrapper filters {% endcomment %}
+  {%- if section.settings.filtering -%}
+    <div class="sidebar-item list-item-sidebar filter-form-wrapper border-radius-theme">
+      <form class="filter-form">
+        {% comment %} Active filters {% endcomment %}
+        <div class="active-filter">
+          {%- if active_filters_count > 0 -%}
+            <h3 class="heading">{{- 'sections.collection_template.filter_by' | t -}}</h3>
+
+            {%- for filter in collection.filters -%}
+              {%- if filter.type == 'price_range' -%}
+                {%- if filter.min_value.value != null or filter.max_value.value != null -%}
+                  <a class="active-filter-item" href="{{ filter.url_to_remove }}" data-reset="price">
+                    {%- liquid
+                      capture min_price
+                        if filter.min_value.value
+                          render 'get-price', price: filter.min_value.value
+                        else
+                          render 'get-price', price: 0
+                        endif
+                      endcapture
+
+                      capture max_price
+                        if filter.max_value.value
+                          render 'get-price', price: filter.max_value.value
+                        else
+                          render 'get-price', price: filter.range_max
+                        endif
+                      endcapture
+
+                      echo min_price | append: ' - ' | append: max_price | strip | remove: '.00'
+                    -%}
+
+                    {%- render 'icon', code: 'close' -%}
+                  </a>
+                {%- endif -%}
+              {%- else -%}
+                {%- for filter_value in filter.active_values -%}
+                  <label
+                    class="active-filter-item"
+                    for="{{ filter_value.param_name | handle }}-{{ filter_value.value | handle }}"
+                  >
+                    {{- filter_value.label | escape -}}
+                    {%- render 'icon', code: 'close' -%}
+                  </label>
+                {%- endfor -%}
+              {%- endif -%}
+            {%- endfor -%}
+
+            <a class="active-filter-item link-underline" href="{{ collection.url }}" data-reset="all">
+              {{- 'sections.collection_template.clear_all' | t -}}
+            </a>
+          {%- endif -%}
+        </div>
+
+        {% comment %} Filters {% endcomment %}
+        <div class="filter-wrapper">
+          <noscript>
+            {%- if section.settings.toolbar_sort -%}
+              <div class="product-sort-by">
+                {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+
+                <label class="collection-filters-label" for="sort-by">
+                  {{- 'sections.collection_template.sort_by_label' | t -}}
+                  :</label
+                >
+
+                <select
+                  name="sort_by"
+                  class="product-sort-by-select"
+                  id="sort-by"
+                  aria-describedby="a11y-refresh-page-message"
+                >
+                  {%- for option in collection.sort_options -%}
+                    <option
+                      value="{{ option.value | escape }}"
+                      {% if option.value == sort_by %}
+                        selected="selected"
+                      {% endif %}
+                    >
+                      {{ option.name | escape }}
+                    </option>
+                  {%- endfor -%}
+                </select>
+              </div>
+            {%- endif -%}
+          </noscript>
+
+          {%- for filter in collection.filters -%}
+            {%- liquid
+              assign is_open = false
+              if filter_mode == 'open' or filter_mode == 'first' and forloop.first
+                assign is_open = true
+              endif
+            -%}
+
+            {% case filter.type %}
+              {% when 'list' %}
+                <details
+                  class="filter-item"
+                  data-index="{{ forloop.index }}"
+                  {% if is_open %}
+                    open
+                  {% endif %}
+                >
+                  <summary class="details-summary">
+                    <span class="filter-title">{{- filter.label | escape -}}</span>
+                    {%- render 'icon', code: 'caret-down' -%}
+                  </summary>
+
+                  <div class="details-content">
+                    <ul class="item-list" role="list">
+                      {%- assign index = 0 -%}
+                      {%- for filter_value in filter.values -%}
+                        {%- liquid
+                          assign list_item_id = '' | append: filter_value.param_name | append: '-' | append: filter_value.value | handle
+                          assign color = ''
+                          assign contrast = 4
+
+                          if filter_value.param_name contains 'option.color'
+                            assign color = filter_value.value | handle | remove: '-'
+                            assign contrast = color | color_contrast: settings.heading_color
+                          endif
+                        -%}
+
+                        {%- unless filter_value.count == 0 -%}
+                          {%- assign index = index | plus: 1 -%}
+                          {%- if index == 11 -%}<ul class="more-items">{%- endif -%}
+                          <li>
+                            <input
+                              type="checkbox"
+                              name="{{ filter_value.param_name }}"
+                              value="{{ filter_value.value }}"
+                              id="{{ list_item_id }}"
+                              {% if color != blank %}
+                                class="hidden-color-input"
+                              {% endif %}
+                              {% if filter_value.active %}
+                                checked
+                              {% endif %}
+                              data-noui
+                            >
+
+                            {%- if color != blank -%}
+                              <span
+                                class="color-visual"
+                                style="color: {% if contrast > 4.5 %}#000000{% else %}#ffffff{% endif %};"
+                              >
+                                <span style="background-color: {{ color }};"></span>
+                              </span>
+                            {%- endif -%}
+
+                            <label for="{{ list_item_id }}" class="filter-label">
+                              {{- filter_value.label | escape -}}
+                              {%- if show_count %}
+                                ({{ filter_value.count -}}
+                                )
+                              {%- endif -%}
+                            </label>
+                          </li>
+                          {%- if index > 11 and forloop.last -%}
+                            </ul>
+                            <li class="toggle" data-toggle="{{ 'sections.collection_template.less' | t }}">
+                              {{- 'sections.collection_template.more' | t -}}
+                            </li>
+                          {%- endif -%}
+                        {%- endunless -%}
+                      {%- endfor -%}
+                    </ul>
+                  </div>
+                </details>
+              {% when 'price_range' %}
+                {% liquid
+                  assign price_item_id = '' | append: filter.param_name | handle
+                %}
+
+                <details
+                  class="filter-item"
+                  data-index="{{ forloop.index }}"
+                  {% if is_open %}
+                    open
+                  {% endif %}
+                >
+                  <summary class="details-summary">
+                    <span class="filter-title">{{- filter.label | escape -}}</span>
+                    {%- render 'icon', code: 'caret-down' -%}
+                  </summary>
+
+                  <div class="details-content">
+                    <div class="range-slider">
+                      {%- liquid
+                        assign min = filter.min_value.value | default: 0 | money_without_currency | remove: '.00' | replace: '.', '' | replace: ',', ''
+                        assign max = filter.range_max | default: 100 | money_without_currency | remove: '.00' | replace: '.', '' | replace: ',', ''
+
+                        assign max_value = max
+                        if filter.max_value.value
+                          assign max_value = filter.max_value.value | money_without_currency | remove: '.00' | replace: '.', '' | replace: ',', ''
+                        endif
+                      -%}
+
+                      <div class="price-slider">
+                        <template>
+                          { "start": [{{ min }}, {{ max_value }}], "connect": true, "range": { "min": 0, "max":
+                          {{ max }}
+                          } }
+                        </template>
+                      </div>
+
+                      <div class="price-input">
+                        <div class="price-from">
+                          <span class="price-currency">{{- cart.currency.symbol -}}</span>
+                          <label class="sr-only" for="filter-{{ price_item_id }}-gte">
+                            {{- 'sections.collection_template.from' | t -}}
+                          </label>
+                          <input
+                            class="price-value"
+                            name="{{ filter.min_value.param_name }}"
+                            {%- if filter.min_value.value -%}
+                              value="{{ min }}"
+                            {%- endif -%}
+                            type="number"
+                            placeholder="0"
+                            min="0"
+                            max="{{ max }}"
+                            data-type="min"
+                          >
+                        </div>
+
+                        <div class="price-to">
+                          <span class="price-currency">{{- cart.currency.symbol -}}</span>
+                          <label class="sr-only" for="filter-{{ price_item_id }}-lte">
+                            {{- 'sections.collection_template.to' | t -}}
+                          </label>
+                          <input
+                            class="price-value"
+                            name="{{ filter.max_value.param_name }}"
+                            id="filter-{{ price_item_id }}-lte"
+                            {%- if filter.max_value.value -%}
+                              value="{{ max_value }}"
+                            {%- endif -%}
+                            type="number"
+                            min="0"
+                            placeholder="{{ max }}"
+                            max="{{ max }}"
+                            data-type="max"
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </details>
+            {% endcase %}
+          {%- endfor -%}
+
+          <noscript>
+            <button type="submit" class="button small-button">
+              {{- 'sections.collection_template.filter_button' | t -}}
+            </button>
+          </noscript>
+        </div>
+
+        {% if collection.current_vendor or collection.current_type %}
+          <input type="hidden" name="q" value="{{ collection.current_vendor }}{{ collection.current_type }}">
+        {% endif %}
+      </form>
+    </div>
+  {%- endif -%}
+
+  {% comment %} Collection product sidebar {% endcomment %}
+  <div class="sidebar-item list-item-sidebar list-product-sidebar border-radius-theme">
+    {% if section.settings.title_product_sidebar != blank %}
+      <h3 class="heading">{{ section.settings.title_product_sidebar }}</h3>
+    {% endif %}
+
+    {%- assign products_limit = section.settings.products_limit -%}
+    {%- assign select_collection = section.settings.select_collection -%}
+
+    <div class="list-product">
+      {% for product in collections[select_collection].products limit: products_limit %}
+        <div class="item-product">
+          <div class="product-thumb ">
+            <a href="{{ product.url | split: '?' | first }}" class="product-url">
+              {{
+                product.featured_image.src
+                | image_url: width: 80, height: 80
+                | image_tag: alt: product.featured_image.alt, loading: 'lazy'
+              }}
+            </a>
+          </div>
+          <div class="product-info">
+            <h5 class="title-product-sidebar">
+                            <a href="{{ product.url | split: '?' | first }}">{{- product.title | escape -}}</a>
+<div data-shop-id="{{shop.id}}" product-id="{{product.id }}" data-page="{{request.page_type}}" class="ddreview-star"></div>
+            </h5>
+            <div class="product-card-bottom">
+              {%- render 'price', product: product -%}
+            </div>
+            <div class="product-rating">
+              <span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% comment %} Banner sidebar {% endcomment %}
+  {%- if section.settings.banner_sidebar != blank -%}
+    <div class="list-item-sidebar">
+      <div class="banner-sidebar border-radius-theme">
+        {%- if section.settings.banner_sidebar_link != blank -%}
+          <a href="{{ section.settings.banner_sidebar_link }}" class="banner-link"></a>
+        {%- endif -%}
+
+        {{- section.settings.banner_sidebar | image_url: width: 1024 | image_tag: loading: 'lazy' -}}
+
+        <div class="banner-text">
+          {% if section.settings.banner_sidebar_subtitle != blank -%}
+            <span class="banner-subtitle">
+              {{ section.settings.banner_sidebar_subtitle }}
+            </span>
+          {% endif %}
+          {% if section.settings.banner_sidebar_title != blank -%}
+            <h4 class="banner-title">
+              {{ section.settings.banner_sidebar_title }}
+            </h4>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+</div>

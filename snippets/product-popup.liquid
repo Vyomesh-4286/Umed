@@ -1,0 +1,116 @@
+<div class="product-summary-popup">
+	<div class="product-summary-inner">
+		{%- for block in section.blocks -%}
+			{%- case block.type -%}
+				{%- when '@app' -%}
+					<div class="product-block sum-item" {{ block.shopify_attributes }}>
+						{%- render block -%}
+					</div>
+
+				{%- when 'text' -%}
+					<p class="product-text heading-font-family sum-item" data-{{ block.id }} {{ block.shopify_attributes }}>
+						{{- block.settings.text_popup -}}
+					</p>
+
+				{%- when 'rate_product' -%}
+					<div class="product-rating sum-item" data-{{ block.id }}>
+						<span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+					</div>
+
+								{%- when 'title_product' -%}
+					<h1 class="product-title heading-font-family sum-item" {{ block.shopify_attributes }} data-{{ block.id }}>
+						<a href="{{ product.url }}">{{- product.title | escape -}}</a>
+<div data-shop-id="{{shop.id}}" product-id="{{product.id }}" data-page="{{request.page_type}}" class="ddreview-star"></div>
+					</h1>
+
+				{%- when 'price_product' -%}
+					<div class="price-wrap sum-item" data-{{ block.id }} {{ block.shopify_attributes }}>
+						{%- render 'price-single', product: product -%}
+					</div>
+
+				{%- when 'coundow_product' -%}
+					{% if block.settings.text_coundow != blank %}
+						<p class="title-coundowt">{{ block.settings.text_coundow }}</p>
+					{% endif %}
+
+					<div class="countdown-time-wrap flat-countdown hidden sum-item" data-{{ block.id }}>
+						<div class="countdown-time" data-time="{{ product.metafields.nesst_custom.countter_date | escape }}">
+							<div class="time-block">
+								<span class="time-number days hover-animated"></span>
+								<span class="lable-countdown">{{- 'products.countdown.days' | t -}}</span>
+							</div>
+
+							<div class="time-block">
+								<span class="time-number hours hover-animated"></span>
+								<span class="lable-countdown">{{- 'products.countdown.hours' | t -}}</span>
+							</div>
+
+							<div class="time-block">
+								<span class="time-number minutes hover-animated"></span>
+								<span class="lable-countdown">{{- 'products.countdown.mins' | t -}}</span>
+							</div>
+
+							<div class="time-block">
+								<span class="time-number seconds hover-animated"></span>
+								<span class="lable-countdown">{{- 'products.countdown.sec' | t -}}</span>
+							</div>
+						</div>
+					</div>
+
+				{%- when 'button' -%}
+				<div class="sum-item" data-{{ block.id }}>
+					<a href="{{ block.settings.button_url }}" class="button-popup hover-animated heading-font-family">{{ block.settings.button_name }} {%- render 'icon', code: 'arrowright' -%}</a>
+				</div>
+
+				{%- when 'newsletter' -%}
+					{%- assign form_id = 'newsletter-form-' | append: section.id -%}
+
+					{%- form 'customer', id: form_id, class: 'form-newsletter' -%}
+						<input type="hidden" name="contact[tags]" value="newsletter">
+
+						<div class="newsletter-wrapper">
+							<input class="field-input"
+								id="input-form-{{ section.id }}"
+								type="email"
+								name="contact[email]"
+								value="{{ form.email }}"
+								aria-required="true"
+								autocorrect="off"
+								autocapitalize="off"
+								autocomplete="email"
+								{% if form.errors %}
+									autofocus
+									aria-invalid="true"
+									aria-describedby="contact-error"
+								{% elsif form.posted_successfully? %}
+									aria-describedby="contact-success"
+								{% endif %}
+								placeholder="{% if block.settings.email_placeholder != blank %} {{ block.settings.email_placeholder }} {% endif %}"
+								required>
+
+								<button type="submit" class="button-newletter" name="commit" >
+									{{ block.settings.button_submit }}
+								</button>
+
+							{%- if form.errors -%}
+								<small class="message error-message" id="contact-error">
+									{%- render 'icon', code: 'error' -%}
+									{{- form.errors.translated_fields['email'] | capitalize -}}
+									{{- form.errors.messages['email'] -}}
+								</small>
+							{%- endif -%}
+						</div>
+
+						{%- if form.posted_successfully? -%}
+							<h3 class="message success-message" id="contact-success" tabindex="-1" autofocus>
+								{%- render 'icon', code: 'success' -%}
+								{{- 'newsletter.success' | t -}}
+							</h3>
+						{%- endif -%}
+
+					{%- endform -%}
+
+			{%- endcase -%}
+		{%- endfor -%}
+	</div>
+</div>

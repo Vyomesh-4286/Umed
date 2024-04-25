@@ -1,0 +1,94 @@
+{% comment %}
+		Renders a product card
+
+		Accepts:
+		- product: {Object} Product Liquid object (optional)
+
+		Usage:
+		{% render 'product-card' %}
+{% endcomment %}
+
+{%- liquid
+	if product.featured_media and product.media[1] != nil and settings.card_image_hover_effect != 'none'
+		assign image_effect = settings.card_image_hover_effect | prepend: ' hover-'
+	endif
+
+	if settings.card_image_overlay
+		assign image_overlay = ' has-overlay'
+	endif
+
+	if settings.image_animation
+		assign image_animation = ' lazy-image'
+	endif
+
+	assign src_tag = 'src'
+	if settings.image_animation
+		assign src_tag = 'data-src'
+	endif
+-%}
+
+<div class="hover-animated product-item-list product-card text-{{ alignment | default: 'left' }}">
+	<div class="box-img-product">
+		<div class="border-radius-theme product-image-wrap {{ settings.card_image_ratio }}-media{{ image_effect }}{{ image_overlay }}" tabindex="-1">
+			<a href="{{ product.url | split: '?' | first }}" class="product-list-url">
+			{% comment %} Image {% endcomment %}
+				{%- if product.featured_media -%}
+					<img class="product-image{{ image_animation }}"
+						{% if settings.image_animation and cycle %}data-delay="{{ cycle | times: 0.15 }}s"{% endif %}
+						srcset="{%- if product.featured_media.width >= 165 -%}{{ product.featured_media | image_url: width: 165 }} 165w,{%- endif -%}
+							{%- if product.featured_media.width >= 360 -%}{{ product.featured_media | image_url: width: 360 }} 360w,{%- endif -%}
+							{%- if product.featured_media.width >= 533 -%}{{ product.featured_media | image_url: width: 533 }} 533w,{%- endif -%}
+							{%- if product.featured_media.width >= 720 -%}{{ product.featured_media | image_url: width: 720 }} 720w,{%- endif -%}
+							{%- if product.featured_media.width >= 940 -%}{{ product.featured_media | image_url: width: 940 }} 940w,{%- endif -%}
+							{%- if product.featured_media.width >= 1066 -%}{{ product.featured_media | image_url: width: 1066 }} 1066w{%- endif -%}"
+						{{ src_tag }}="{{ product.featured_media | image_url: width: 1066 }}"
+						sizes="(min-width: {{ settings.screen_lg }}px) {{ settings.screen_lg | minus: 130 | divided_by: 4 }}px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
+						data-key="{{ product.featured_media.src | handle | append: '-grid' }}"
+						alt="{{ product.featured_media.alt | escape }}"
+						loading="lazy"
+						width="{{ product.featured_media.width }}"
+						height="{{ product.featured_media.height }}">
+				</a>
+			{%- else -%}
+				{{- 'image' | placeholder_svg_tag: 'placeholder-svg product-image' -}}
+			{%- endif -%}
+
+		</div>
+	</div>
+
+	<div class="product-content-wrap">		
+
+		{% comment %} Title {% endcomment %}
+				{%- if settings.card_show_title -%}
+			<h2 class="product-title">
+				<a href="{{ product.url | split: '?' | first }}">{{- product.title | escape -}}</a>
+<div data-shop-id="{{shop.id}}" product-id="{{product.id }}" data-page="{{request.page_type}}" class="ddreview-star"></div>
+			</h2>
+		{%- endif -%}
+
+		{% comment %} Rating {% endcomment %}
+		{%- if settings.card_show_rating -%}
+
+			{%- liquid
+				assign reviews       = product.metafields.spr.reviews
+				assign review_count  = reviews | split: '"reviewCount": "' | last | split: '"' | first | plus: 0
+				assign review_rating = reviews | split: '"ratingValue": "' | last | split: '"' | first | plus: 0 | round: 2
+			-%}
+			{%- if review_count > 0 -%}
+				<div class="product-rating">
+					<span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+					<span class="rating-value">({{ review_rating }})</span>
+				</div>
+			{%- endif -%}
+		{%- endif -%}		
+
+		{% comment %} price and add to cart {% endcomment %}
+		<div class="product-card-bottom">
+			{% comment %} Price {% endcomment %}
+			{%- if settings.card_show_price -%}
+				{%- render 'price', product: product -%}
+			{%- endif -%}
+		</div>
+
+	</div>
+</div>

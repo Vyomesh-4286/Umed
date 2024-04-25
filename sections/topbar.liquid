@@ -1,0 +1,378 @@
+{%- if section.settings.show_topbar -%}
+  {%- liquid
+    assign section_id = '#shopify-section-' | append: section.id
+    assign currency_selector = false
+    assign language_selector = false
+
+    if section.settings.show_currency_selector and localization.available_countries.size > 1
+      assign currency_selector = true
+    endif
+
+    if section.settings.show_language_selector and localization.available_languages.size > 1
+      assign language_selector = true
+    endif
+  -%}
+
+  {{ 'swiper.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'swiper.js' | asset_url }}" defer="defer"></script>
+  <style>
+    {{ section_id }} * {
+    	font-size: {{ section.settings.text_size }}px;
+    	font-weight: {{ settings.body_font_weight | plus: 100 }};
+
+    	{%- if section.settings.color != blank -%}
+    		color: {{ section.settings.color }};
+    	{%- endif -%}
+
+    	{%- if section.settings.text_uppercase -%}
+    		text-transform: uppercase;
+    	{%- endif -%}
+    }
+
+    {{ section_id }} a:hover {
+    	color: rgba(var(--link-hover));
+    }
+
+    {{ section_id }} {
+    	padding-top: {{ section.settings.padding_top_mobile }}px;
+    	padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+
+    	{%- if section.settings.bg_color != blank -%}
+    		background-color: {{ section.settings.bg_color }};
+    	{%- endif -%}
+
+    	{%- if section.settings.border_color != blank -%}
+    		border-bottom: 1px solid {{ section.settings.border_color }};
+    	{%- endif -%}
+    }
+
+    @media (min-width: 768px) {
+    	{{ section_id }} {
+    		padding-top: {{ section.settings.padding_top }}px;
+    		padding-bottom: {{ section.settings.padding_bottom }}px;
+    	}
+    }
+  </style>
+
+  <div class="container">
+    <div class="topbar-inner">
+      {%- if section.settings.content_left != blank -%}
+        <div class="content-left">
+          {{- section.settings.content_left -}}
+        </div>
+      {%- endif -%}
+
+      <div class="content-center">
+        <div class="carousel-swiper" role="list">
+          <template data-options>
+            {
+            {%- unless request.design_mode -%}
+              "loop": true,
+            {%- endunless -%}
+            {%- if section.settings.autoplay and section.settings.delay > 0 -%}
+              "autoplay": { "delay": {{ section.settings.delay }}
+              },
+            {%- endif -%}
+            "on": { "init": {} }, "slidesPerView": 1, "direction": "vertical", "speed": {{ section.settings.speed }}
+            }
+          </template>
+
+          <div class="swiper">
+            <div class="swiper-wrapper">
+              {%- for block in section.blocks -%}
+                <div
+                  class="swiper-slide"
+                  data-{{ block.id }}
+                  {{ block.shopify_attributes }}
+                  {% if request.design_mode %}
+                    data-index="{{ forloop.index0 }}"
+                  {% endif %}
+                >
+                  {%- case block.type -%}
+                    {%- when '@app' -%}
+                      {%- render block -%}
+                    {%- when 'slide' -%}
+                      {% if block.settings.content_center != blank %}
+                        <p class="text-content-center">{{ block.settings.content_center }}</p>
+                      {% endif %}
+                  {%- endcase -%}
+                </div>
+              {%- endfor -%}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-right">
+        {%- if section.settings.content_right != blank -%}
+          {{ section.settings.content_right }}
+        {%- endif -%}
+
+        {% comment %} Language/currency {% endcomment %}
+        {%- form 'localization', id: 'localization_form', class: 'localization-form' -%}
+          {% comment %} Currency {% endcomment %}
+          {%- if section.settings.show_currency_selector -%}
+            <div class="toggle-dropdown">
+              <input type="hidden" name="currency_code" value="{{ form.current_currency.iso_code }}">
+              <span class="sr-only">{{- 'localization.currency_label' | t -}}</span>
+
+              <button class="dropdown-summary" type="button">
+                {{- localization.country.name }} ({{ localization.country.currency.iso_code }}
+                {% if localization.country.currency.symbol %}{{ localization.country.currency.symbol }}{%- endif -%}
+                )
+                <span class="dropdown-icon">{%- render 'icon', code: 'chevron-down' -%}</span>
+              </button>
+
+              <div class="dropdown-content">
+                <div class="dropdown-content-inner">
+                  <header class="dropdown-content-header">
+                    <span class="dropdown-content-title">{{- 'localization.currency_label' | t -}}</span>
+                    {% render 'icon', code: 'close' %}
+                  </header>
+
+                  <ul class="content" role="list">
+                    {%- for country in localization.available_countries -%}
+                      <li>
+                        <button
+                          type="submit"
+                          name="country_code"
+                          class="submit"
+                          value="{{ country.iso_code }}"
+                          {% if country.iso_code == localization.country.iso_code %}
+                            aria-current="true"
+                          {% endif %}
+                        >
+                          {{- country.name }} ({{ country.currency.iso_code -}}
+                          {%- if country.currency.symbol %}{{ country.currency.symbol }}{%- endif -%}
+                          )
+                        </button>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          {%- endif -%}
+
+          {% comment %} Language {% endcomment %}
+          {%- if section.settings.show_language_selector -%}
+            <div class="toggle-dropdown">
+              <input type="hidden" name="locale_code" value="{{ form.current_locale.iso_code }}">
+              <span class="sr-only">{{- 'localization.language_label' | t -}}</span>
+
+              <button class="dropdown-summary" type="button">
+                {{- localization.language.endonym_name | capitalize -}}
+                <span class="dropdown-icon">{%- render 'icon', code: 'chevron-down' -%}</span>
+              </button>
+
+              <div class="dropdown-content">
+                <div class="dropdown-content-inner">
+                  <header class="dropdown-content-header">
+                    <span class="dropdown-content-title">{{- 'localization.language_label' | t -}}</span>
+                    {% render 'icon', code: 'close' %}
+                  </header>
+
+                  <ul class="content" role="list">
+                    {%- for language in localization.available_languages -%}
+                      <li>
+                        <button
+                          type="submit"
+                          name="locale_code"
+                          class="submit"
+                          value="{{ language.iso_code }}"
+                          {% if language.iso_code == localization.language.iso_code %}
+                            aria-current="true"
+                          {% endif %}
+                        >
+                          {{- language.endonym_name | capitalize -}}
+                        </button>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          {%- endif -%}
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+	"name": "t:sections.topbar.name",
+	"class": "topbar-section",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "show_topbar",
+			"default": true,
+			"label": "t:sections.topbar.settings.show_topbar.label"
+		},
+		{
+			"type": "color",
+			"id": "border_color",
+			"default": "#ececec",
+			"label": "t:sections.topbar.settings.border_color.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "text_uppercase",
+			"default": true,
+			"label": "t:sections.topbar.settings.text_uppercase.label"
+		},
+		{
+			"type": "color",
+			"id": "color",
+			"default": "#2d3448",
+			"label": "t:sections.topbar.settings.color.label"
+		},
+		{
+			"type": "color",
+			"id": "bg_color",
+			"default": "#eae1d1",
+			"label": "t:sections.topbar.settings.bg_color.label"
+		},
+		{
+			"type": "range",
+			"id": "text_size",
+			"min": 8,
+			"max": 30,
+			"step": 1,
+			"default": 12,
+			"unit": "px",
+			"label": "t:sections.topbar.settings.text_size.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.topbar.settings.header_content_left.content"
+		},
+		{
+			"type": "richtext",
+			"id": "content_left",
+			"default": "<p>About Us My Account Wishlist Order Tracking</p>",
+			"label": "t:sections.topbar.settings.text_content.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.topbar.settings.header_content_center.content"
+		},
+		{
+            "type": "checkbox",
+            "id": "autoplay",
+            "default": true,
+            "label": "t:sections.topbar.settings.autoplay.label"
+        },
+        {
+            "type": "number",
+            "id": "delay",
+            "default": 3000,
+            "label": "t:sections.topbar.settings.delay.label"
+        },
+        {
+            "type": "number",
+            "id": "speed",
+            "default": 500,
+            "label": "t:sections.topbar.settings.speed.label"
+        },
+		{
+			"type": "header",
+			"content": "t:sections.topbar.settings.header_content_right.content"
+		},
+		{
+			"type": "richtext",
+			"id": "content_right",
+			"default": "<p>Need help? Call Us:+ 1800 900</p>",
+			"label": "t:sections.topbar.settings.text_content.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_currency_selector",
+			"default": true,
+			"label": "t:sections.topbar.settings.show_currency_selector.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_language_selector",
+			"default": true,
+			"label": "t:sections.topbar.settings.show_language_selector.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 10,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 10,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 5,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 5,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "slide",
+			"name": "t:sections.topbar.blocks.slide.name",
+			"settings": [
+				{
+					"type": "text",
+					"id": "content_center",
+					"default": "Free shipping for all u.s. orders $75+",
+					"label": "t:sections.topbar.blocks.slide.settings.content_center.label"
+				}
+			]
+		}
+	],
+	"default": {
+		"blocks": [
+			{
+				"type": "slide"
+			},
+			{
+				"type": "slide"
+			}
+		]
+	}
+}
+{% endschema %}

@@ -1,0 +1,223 @@
+{%- liquid
+  assign section_id = '#shopify-section-' | append: section.id
+  assign full = section.settings.full
+-%}
+
+<style>
+  {{ section_id }} {
+  	{%- if full -%}
+  		padding-left: 15px;
+  		padding-right: 15px;
+  	{%- endif -%}
+
+  	padding-top: {{ section.settings.padding_top_mobile }}px;
+  	padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+  }
+
+  {{ section_id }} .section-title{
+  	margin-bottom: {{ section.settings.head_padding_bottom }}px;
+  }
+   {% for block in section.blocks %}
+      .box-img-product{
+        background-color:{{ block.settings.block_bg_color }}
+      }
+     {% endfor %}}
+  @media (min-width: 768px) {
+  	{{ section_id }} {
+  		padding-top: {{ section.settings.padding_top }}px;
+  		padding-bottom: {{ section.settings.padding_bottom }}px;
+  	}
+  }
+</style>
+<div class="{% if full %}stretch-section{% else %}container{% endif %}">
+  <div class="product-list grid grid-{{ section.settings.columns }} grid-tablet-2 grid-mobile-1">
+    {%- if section.blocks.size > 0 -%}
+      {%- for block in section.blocks -%}
+        <div class="grid-item">
+          {% if block.settings.section_title != blank %}
+            <h4 class="section-title">{{ block.settings.section_title }}</h4>
+          {% endif %}
+
+          <ul class="list-product">
+            {%- liquid
+              assign collection = block.settings.select_collection
+              assign products_limit = block.settings.products_limit
+            -%}
+            {% for product in collections[collection].products limit: products_limit %}
+              <li class="item-product">
+                {%- liquid
+                  capture for_cycle
+                    case block.settings.products_limit
+                      when 2
+                        cycle 1, 2
+                      when 3
+                        cycle 1, 2, 3
+                      when 4
+                        cycle 1, 2, 3, 4
+                      when 5
+                        cycle 1, 2, 3, 4, 5
+                      when 6
+                        cycle 1, 2, 3, 4, 5, 6
+                      when 7
+                        cycle 1, 2, 3, 4, 5, 6, 7
+                      when 8
+                        cycle 1, 2, 3, 4, 5, 6, 7, 8
+                      when 9
+                        cycle 1, 2, 3, 4, 5, 6, 7, 8, 9
+                      when 10
+                        cycle 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+                      when 11
+                        cycle 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+                      when 12
+                        cycle 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+                    endcase
+                  endcapture
+
+                  render 'product-item-list', product: product, cycle: for_cycle
+                -%}
+              </li>
+
+            {%- else -%}
+              {%- for i in (1..products_limit) -%}
+                {%- liquid
+                  capture index
+                    cycle 1, 2, 3, 4, 5, 6
+                  endcapture
+                -%}
+
+                <li class="item-product">
+                  {%- render 'product-item-list-placeholder', index: index -%}
+                </li>
+              {%- endfor -%}
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+	"name": "t:sections.product-list.name",
+	"tag": "section",
+	"class": "product-list-section",
+	"settings": [
+		{
+			"type": "range",
+			"id": "columns",
+			"min": 2,
+			"max": 6,
+			"step": 1,
+			"default": 4,
+			"label": "t:sections.product-list.settings.columns.label"
+		},
+		{
+			"type": "range",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 30,
+			"unit": "px",
+			"id": "head_padding_bottom",
+			"label": "t:sections.product-list.settings.head_padding_bottom.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"blocks": [
+		{
+			"type": "list",
+			"name": "t:sections.product-list.blocks.list.name",
+			"settings": [
+				{
+					"type": "text",
+					"id": "section_title",
+					"default": "Top Selling",
+					"label": "t:sections.product-list.blocks.list.settings.section_title.label"
+				},
+				{
+					"type": "range",
+					"id": "products_limit",
+					"min": 1,
+					"max": 50,
+					"step": 1,
+					"default": 3,
+					"label": "t:sections.product-list.blocks.list.settings.products_limit.label"
+				},
+				{
+					"type": "collection",
+					"id": "select_collection",
+					"label": "t:sections.product-list.blocks.list.settings.collection.label"
+				},
+                {
+                  "type":"color",
+                  "id":"block_bg_color",
+                  "label":"Backround Color",
+                  "default": "#F6F8FA"
+                }
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.product-list.presets.name",
+			"blocks": [
+				{
+					"type": "list",
+					"settings": {
+						"section_title": "Top Selling"
+					}
+				}
+
+			]
+		}
+	]
+}
+{% endschema %}

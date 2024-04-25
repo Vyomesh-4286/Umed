@@ -1,0 +1,55 @@
+{% comment %} Add to cart {% endcomment %}
+{%- capture product_add_to_cart -%}
+		<input type="hidden" name="id" >
+		<button type="submit" name="add" class="add-to-cart-button">
+			{%- render 'icon', code: 'cart' -%}
+			{{- 'products.product.add_to_cart' | t -}}
+		</button>
+{%- endcapture -%}
+
+<div class="product-card product-card-item-v3 border-radius-theme text-left">
+	<div class="product-image-wrap border-radius-theme">
+		{{- 'product-' | append: index | placeholder_svg_tag: 'placeholder-svg' -}}
+	</div>
+
+	<div class="product-content-wrap">
+		<div class="countdown-time-wrap flat-countdown hidden">
+			<div class="countdown-time" data-time="{{ product.metafields.nesst_custom.countter_date | escape }}">
+				<div class="time-block">
+					<span class="time-number days hover-animated">10</span>
+					<span class="lable-countdown">{{- 'products.countdown.days' | t -}}</span>
+				</div>
+
+				<div class="time-block">
+					<span class="time-number hours hover-animated">10</span>
+					<span class="lable-countdown">{{- 'products.countdown.hours' | t -}}</span>
+				</div>
+
+				<div class="time-block">
+					<span class="time-number minutes hover-animated">10</span>
+					<span class="lable-countdown">{{- 'products.countdown.mins' | t -}}</span>
+				</div>
+
+				<div class="time-block">
+					<span class="time-number seconds hover-animated">10</span>
+					<span class="lable-countdown">{{- 'products.countdown.sec' | t -}}</span>
+				</div>
+			</div>
+		</div>
+		<div class="deals-content">
+			<h2 class="product-title">
+				<span>{{- 'onboarding.products.title' | t -}}</span>
+			</h2>
+
+			<div class="product-card-bottom">
+				{% comment %} Price {% endcomment %}
+				{%- if settings.card_show_price -%}
+					{%- render 'price', product: product -%}
+				{%- endif -%}
+
+				{% comment %} Add to cart {% endcomment %}
+				{{- product_add_to_cart -}}
+			</div>
+		</div>
+	</div>	
+</div>

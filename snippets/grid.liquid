@@ -1,0 +1,140 @@
+{%- liquid
+	assign screen_lg = 1200
+	assign screen_md = 992
+	assign screen_sm = 768
+	assign gutter    = 15
+    assign gap		 = 30
+
+	if settings.screen_lg > 0
+		assign screen_lg = settings.screen_lg
+	endif
+-%}
+
+{% comment %} Row {% endcomment %}
+.row {
+	margin-left: {{ gutter | times: -1 }}px;
+	margin-right: {{ gutter | times: -1 }}px;
+}
+
+.row-fluid {
+	margin-left: 0;
+	margin-right: 0;
+}
+
+.row-fluid [class*="col-"] {
+	padding-right: 0;
+	padding-left: 0;
+}
+
+.container {
+	max-width: 100%;
+	margin-right: auto;
+	margin-left: auto;
+	padding-left: {{ gutter }}px;
+	padding-right: {{ gutter }}px;
+}
+
+@media (min-width: {{ screen_sm }}px) {
+	.container {
+		max-width: {{ screen_md }}px;
+	}
+}
+
+@media (min-width: {{ screen_md }}px) {
+	.container {
+		max-width: {{ screen_lg }}px;
+	}
+}
+
+@media (max-width: {{ screen_sm | minus: 1 }}px) {
+	.container {
+		padding-left: 2rem;
+		padding-right: 2rem;
+	}
+}
+
+{% comment %} Grid {% endcomment %}
+.grid {
+	margin: 0 {{ gutter | times: -1 }}px;
+	min-height: 1px;
+	display: flex;
+	flex-wrap: wrap;
+	padding: 0;
+	list-style: none;
+}
+
+.grid-layout{
+	display: grid;
+	gap: {{ gap }}px;
+}
+
+.grid-item {
+	padding-left: {{ gutter }}px;
+	padding-right: {{ gutter }}px;
+	min-height: 1px;
+}
+
+{% comment %} Grid gutter on mobile
+@media (max-width: 991px) {
+	.grid {
+		margin: 0 {{ gutter | times: -1.0 | divided_by: 2 }}px;
+	}
+
+	.grid-item {
+		padding-left: {{ gutter | times: 1.0 | divided_by: 2 }}px;
+		padding-right: {{ gutter | times: 1.0 | divided_by: 2 }}px;
+	}
+}
+{% endcomment %}
+
+{% comment %} For desktop {% endcomment %}
+@media (min-width: {{ screen_md }}px) {
+	{%- for i in (1..12) -%}
+		.grid-{{ i }} .grid-item {
+			width: {{ 100 | times: 1.0 | divided_by: i }}%;
+		}
+	{%- endfor -%}
+
+	{%- for i in (1..12) -%}
+		.grid-layout.grid-{{ i }} {
+			grid-template-columns: repeat( {{ i }},minmax(0,1fr) );
+		}
+	{%- endfor -%}
+}
+
+{% comment %} For tablet {% endcomment %}
+@media (min-width: {{ screen_sm }}px) and (max-width: {{ screen_md | minus: 1 }}px) {
+	{%- for i in (1..12) -%}
+		.grid-tablet-{{ i }} .grid-item {
+			width: {{ 100 | times: 1.0 | divided_by: i }}%;
+		}
+	{%- endfor -%}
+
+	{%- for i in (1..12) -%}
+		.grid-layout.grid-tablet-{{ i }} {
+			grid-template-columns: repeat( {{ i }},minmax(0,1fr) );
+		}
+	{%- endfor -%}
+}
+
+{% comment %} For mobile {% endcomment %}
+@media (max-width: {{ screen_sm | minus: 1 }}px) {
+	{%- for i in (1..12) -%}
+		.grid-mobile-{{ i }} .grid-item {
+			width: {{ 100 | times: 1.0 | divided_by: i }}%;
+		}
+	{%- endfor -%}
+
+	{%- for i in (1..12) -%}
+		.grid-layout.grid-mobile-{{ i }} {
+			grid-template-columns: repeat( {{ i }},minmax(0,1fr) );
+		}
+	{%- endfor -%}
+}
+
+{% comment %} Transition delay {% endcomment %}
+{%- for i in (1..13) -%}
+	[data-delay="{{ i | times: 0.15 }}s"] {
+		transition-delay: {{ i | times: 0.15 }}s;
+	}
+{%- endfor -%}

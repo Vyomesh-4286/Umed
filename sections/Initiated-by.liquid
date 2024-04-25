@@ -1,0 +1,119 @@
+<section class="price-discount">
+  <div class="container">
+    <div class="initiated-flex-section">
+      {% if section.settings.image_first != blank %}
+      <div class="initiated-image-first">
+        <div class="initiated-content-image">
+          <img src="{{ section.settings.image_first | img_url: 'master' }}" alt="">
+          <!-- <div id="lottie"></div> -->
+
+<script>
+  var animation = lottie.loadAnimation({
+    container: document.getElementById('lottie'), // Required
+    renderer: 'svg', // Required: Common renderers are 'svg', 'canvas', and 'html'
+    loop: true, // Optional: Use 'false' for play once
+    autoplay: true, // Optional: Use 'false' to control playback manually
+    path: 'https://cdn.shopify.com/s/files/1/0580/1358/1414/files/Charkha.json?v=1713861743' // Required: Path to your animation JSON
+  });
+</script>
+        </div>
+      </div>
+      {% endif %}
+     <div class="initiated-blocks">
+      {% for block in section.blocks %}
+        {% if block.settings.block_heading != blank %}
+           <h2 class="initiated-block-heading">{{ block.settings.block_heading }}</h2>
+          {% endif %}
+       <div class="initiated-block">
+         {% if block.settings.block_first_image != blank %}
+        <div class="initiated-block__image">
+          <img src="{{ block.settings.block_first_image | img_url: 'master' }}" alt="">
+        </div>
+        {% endif %} 
+         {% if block.settings.block_second_image != blank %}
+        <div class="initiated-block__image">
+          <img src="{{ block.settings.block_second_image | img_url: 'master' }}" alt="">
+        </div>
+        {% endif %}
+       </div>
+      {% endfor %}   
+  </div>
+    {% if section.settings.image_second != blank %}
+      <div class="initiated-image-second">
+        <div class="initiated-content__image">
+          <img src="{{ section.settings.image_second | img_url: 'master' }}" alt="">
+          <!-- <div id="lottie_1"></div> -->
+
+<script>
+  var animation_1 = lottie.loadAnimation({
+    container: document.getElementById('lottie_1'), // Required
+    renderer: 'svg', // Required: Common renderers are 'svg', 'canvas', and 'html'
+    loop: true, // Optional: Use 'false' for play once
+    autoplay: true, // Optional: Use 'false' to control playback manually
+    path: 'https://cdn.shopify.com/s/files/1/0580/1358/1414/files/Potter.json?v=1713942553' // Required: Path to your animation JSON
+  });
+</script>
+      </div>
+    </div>
+    {% endif %}  
+    </div>  
+  </div>
+</section>
+
+
+{% schema %}
+{
+  "name": "Initiated Section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "section_heading",
+      "label": "Header"
+    },
+    {
+      "type": "text",
+      "id": "section_subheading",
+      "label": "Subheader"
+    },
+    {
+       "type": "image_picker",
+        "id": "image_first",
+        "label": "Initiated Image First"
+    },
+    {
+       "type": "image_picker",
+        "id": "image_second",
+        "label": "Initiated Image Second"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "initiated",
+      "name": "Initiated",
+      "settings": [
+        {
+          "type": "text",
+          "id": "block_heading",
+          "label": "Heading"
+        },
+        {
+          "type": "image_picker",
+          "id": "block_first_image",
+          "label": "First Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "block_second_image",
+          "label": "Second Image"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Initiated Section",
+      "category": "Initiated"
+    }
+  ]
+}
+{% endschema %}

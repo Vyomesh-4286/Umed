@@ -1,0 +1,1025 @@
+{%- liquid
+  assign section_id = '#shopify-section-' | append: section.id
+  assign total = section.settings.rows | times: section.settings.columns
+  assign items_per_page = cart.attributes.collection_products_per_page | default: total | times: 1
+  assign sort_by = collection.sort_by | default: collection.default_sort_by
+  assign show_count = section.settings.show_count
+  assign space_sidebar = section.settings.space_sidebar
+  assign sidebar_width = section.settings.width_sidebar
+
+  assign active_filters_count = 0
+  for filter in collection.filters
+    if filter.type == 'list'
+      assign active_filters_count = active_filters_count | plus: filter.active_values.size
+    elsif filter.type == 'price_range' and filter.min_value.value or filter.max_value.value
+      assign active_filters_count = active_filters_count | plus: 1
+    endif
+  endfor
+
+  assign product_list = false
+  if section.settings.collection != blank and section.settings.collection.all_products_count > 0
+    assign product_list = section.settings.collection.products
+  endif
+-%}
+
+{%- if section.settings.toolbar_title -%}
+  <style>
+    {{ section_id }} .toolbar .title {
+    	{%- if section.settings.title_color != blank -%}
+    		color: {{ section.settings.title_color }};
+    	{%- endif -%}
+
+    	{%- if section.settings.title_size > 0 -%}
+    		font-size: {{ section.settings.title_size }}px;
+    	{%- endif -%}
+    }
+
+    @media (min-width: 1200px){
+    	{{ section_id }} .collections.has-sidebar .sidebar{
+    		width: {{ sidebar_width }}%;
+    	}
+
+    	{{ section_id }} .collections.has-sidebar .content{
+    		width: calc( {{ 100 | minus: sidebar_width }}% - {{ space_sidebar }}px );
+    	}
+    }
+  </style>
+{%- endif -%}
+
+{{ 'main-collection.css' | asset_url | stylesheet_tag }}
+{{ 'nouislider.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'nouislider.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'main-collection.js' | asset_url }}" defer="defer"></script>
+
+<div class="container">
+  {% if section.settings.filter_top %}
+    <details class="filter-top">
+      <summary class="details-summary">
+        <span class="filtertitle">
+          {%- render 'icon', code: 'filter2' -%}
+          <span>{{- 'sections.collection_template.filters' | t -}}</span>
+          {%- render 'icon', code: 'chevron-down' -%}
+        </span>
+      </summary>
+
+      <div class="details-content">
+        <div class="filter-top-content sidebar">
+          {% render 'filter-top-collection' %}
+        </div>
+      </div>
+    </details>
+  {%- endif -%}
+
+  <div
+    class="collections {% if section.settings.layout_sidebar == 'left' or section.settings.layout_sidebar == 'right' %}has-sidebar{% endif %}"
+    data-id="{{ section.id }}"
+  >
+    {% comment %} Sidebar {% endcomment %}
+    {% if section.settings.layout_sidebar == 'left' or section.settings.layout_sidebar == 'right' %}
+      <aside class="sidebar {% if section.settings.layout_sidebar == 'left' %}order-1{% elsif section.settings.layout_sidebar == 'right' %}order-2{% endif %}">
+        {% render 'slidebar-collection' %}
+      </aside>
+    {% endif %}
+
+    {% comment %} Main {% endcomment %}
+    {%- paginate collection.products by items_per_page -%}
+      {% comment %} Mobile filters {% endcomment %}
+      <div class="mobile-filter">
+        {% comment %} Header {% endcomment %}
+        <div class="mobile-filter-header">
+          <h2 class="title sr-only">
+            {%- liquid
+              if collection.handle == 'all'
+                echo 'sections.collection_template.title' | t
+              else
+                echo collection.title
+              endif
+            -%}
+          </h2>
+
+          {%- if section.settings.filtering -%}
+            <button class="filter-sort">
+              {%- render 'icon', code: 'filter' -%}
+              {{- 'sections.collection_template.filter_and_sort' | t -}}
+            </button>
+          {%- endif -%}
+
+          <span class="product-count">
+            {%- liquid
+              if collection.products.size == 0
+                echo 'sections.collection_template.empty' | t
+              else
+                echo 'sections.collection_template.product_count' | t: count: paginate.items
+              endif
+            -%}
+          </span>
+        </div>
+
+        {% comment %} Active filters {% endcomment %}
+        <div class="mobile-active-filter">
+          {%- if active_filters_count > 0 -%}
+            <h3 class="heading sr-only">{{- 'sections.collection_template.filter_by' | t -}}</h3>
+
+            <a class="active-filter-item" href="{{ collection.url }}" data-reset="all">
+              {{- 'sections.collection_template.clear_all' | t -}}
+              {%- render 'icon', code: 'close' -%}
+            </a>
+
+            {%- for filter in collection.filters -%}
+              {%- if filter.type == 'price_range' -%}
+                {%- if filter.min_value.value != null or filter.max_value.value != null -%}
+                  <a class="active-filter-item" href="{{ filter.url_to_remove }}" data-reset="price">
+                    {%- liquid
+                      capture min_price
+                        if filter.min_value.value
+                          render 'get-price', price: filter.min_value.value
+                        else
+                          render 'get-price', price: 0
+                        endif
+                      endcapture
+
+                      capture max_price
+                        if filter.max_value.value
+                          render 'get-price', price: filter.max_value.value
+                        else
+                          render 'get-price', price: filter.range_max
+                        endif
+                      endcapture
+
+                      echo min_price | append: ' - ' | append: max_price | strip | remove: '.00'
+                    -%}
+
+                    {%- render 'icon', code: 'close' -%}
+                  </a>
+                {%- endif -%}
+              {%- else -%}
+                {%- for filter_value in filter.active_values -%}
+                  <a href="{{ filter.url_to_remove }}" class="active-filter-item">
+                    {{- filter_value.label | escape -}}
+                    {%- render 'icon', code: 'close' -%}
+                  </a>
+                {%- endfor -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+        </div>
+
+        {% comment %} Filter modal {% endcomment %}
+        <div class="mobile-filter-modal">
+          <form class="mobile-filter-form">
+            <div class="form-header">
+              <span class="close-button">{%- render 'icon', code: 'close' -%}</span>
+              <span class="back-button">{%- render 'icon', code: 'arrow-left-short' -%}</span>
+              <span class="heading">{{- 'sections.collection_template.filter_and_sort' | t -}}</span>
+            </div>
+
+            <div class="form-content">
+              <div class="form-content-inner">
+                {%- for filter in collection.filters -%}
+                  {% case filter.type %}
+                    {% when 'list' %}
+                      <div class="filter-item" data-index="{{ forloop.index }}">
+                        <div class="filter-heading">
+                          <span class="heading-text">{{- filter.label | escape -}}</span>
+                          {%- render 'icon', code: 'chevron-right' -%}
+                        </div>
+
+                        <div class="filter-content">
+                          <ul class="item-list" role="list">
+                            {%- assign index = 0 -%}
+                            {%- for filter_value in filter.values -%}
+                              {%- liquid
+                                assign list_item_id = 'mobile-' | append: filter_value.param_name | append: '-' | append: filter_value.value | handle
+                                assign color = ''
+                                assign contrast = 4
+
+                                if filter_value.param_name contains 'option.color'
+                                  assign color = filter_value.value | handle | remove: '-'
+                                  assign contrast = color | color_contrast: settings.heading_color
+                                endif
+                              -%}
+
+                              {%- unless filter_value.count == 0 -%}
+                                <li>
+                                  <input
+                                    type="checkbox"
+                                    name="{{ filter_value.param_name }}"
+                                    value="{{ filter_value.value }}"
+                                    id="{{ list_item_id }}"
+                                    {% if color != blank %}
+                                      class="hidden-color-input"
+                                    {% endif %}
+                                    {% if filter_value.active %}
+                                      checked
+                                    {% endif %}
+                                    data-noui
+                                  >
+
+                                  {%- if color != blank -%}
+                                    <span
+                                      class="color-visual"
+                                      style="color: {% if contrast > 4.5 %}#000000{% else %}#ffffff{% endif %};"
+                                    >
+                                      <span style="background-color: {{ color }};"></span>
+                                    </span>
+                                  {%- endif -%}
+
+                                  <label for="{{ list_item_id }}" class="filter-label">
+                                    {{- filter_value.label | escape -}}
+                                    {%- if show_count -%}
+                                      <span class="label-count">{{- filter_value.count -}}</span>
+                                    {%- endif -%}
+                                  </label>
+                                </li>
+                              {%- endunless -%}
+                            {%- endfor -%}
+                          </ul>
+                        </div>
+                      </div>
+                    {% when 'price_range' %}
+                      {% liquid
+                        assign price_item_id = 'mobile-' | append: filter.param_name | handle
+                      %}
+
+                      <div class="filter-item" data-index="{{ forloop.index }}">
+                        <div class="filter-heading">
+                          <span class="heading-text">{{- filter.label | escape -}}</span>
+                          {%- render 'icon', code: 'chevron-right' -%}
+                        </div>
+
+                        <div class="filter-content">
+                          <div class="range-slider">
+                            {%- liquid
+                              assign min = filter.min_value.value | default: 0 | money_without_currency | remove: '.00' | replace: '.', '' | replace: ',', ''
+                              assign max = filter.range_max | default: 100 | money_without_currency | remove: '.00' | replace: '.', '' | replace: ',', ''
+
+                              assign max_value = max
+                              if filter.max_value.value
+                                assign max_value = filter.max_value.value | money_without_currency | remove: '.00' | replace: '.', '' | replace: ',', ''
+                              endif
+                            -%}
+
+                            <div class="price-slider">
+                              <template>
+                                { "start": [{{ min }}, {{ max_value }}], "connect": true, "range": { "min": 0, "max":
+                                {{ max }}
+                                } }
+                              </template>
+                            </div>
+
+                            <div class="price-input">
+                              <div class="price-from">
+                                <span class="price-currency">{{- cart.currency.symbol -}}</span>
+                                <label class="sr-only" for="filter-{{ price_item_id }}-gte">
+                                  {{- 'sections.collection_template.from' | t -}}
+                                </label>
+                                <input
+                                  class="price-value"
+                                  name="{{ filter.min_value.param_name }}"
+                                  {%- if filter.min_value.value -%}
+                                    value="{{ min }}"
+                                  {%- endif -%}
+                                  type="number"
+                                  placeholder="0"
+                                  min="0"
+                                  max="{{ max }}"
+                                  data-type="min"
+                                >
+                              </div>
+
+                              <div class="price-to">
+                                <span class="price-currency">{{- cart.currency.symbol -}}</span>
+                                <label class="sr-only" for="filter-{{ price_item_id }}-lte">
+                                  {{- 'sections.collection_template.to' | t -}}
+                                </label>
+                                <input
+                                  class="price-value"
+                                  name="{{ filter.max_value.param_name }}"
+                                  id="filter-{{ price_item_id }}-lte"
+                                  {%- if filter.max_value.value -%}
+                                    value="{{ max_value }}"
+                                  {%- endif -%}
+                                  type="number"
+                                  min="0"
+                                  placeholder="{{ max }}"
+                                  max="{{ max }}"
+                                  data-type="max"
+                                >
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                  {% endcase %}
+                {%- endfor -%}
+
+                <div class="filter-item">
+                  <div class="filter-heading">
+                    <span class="heading-text">{{- 'sections.collection_template.display' | t -}}</span>
+                    {%- render 'icon', code: 'chevron-right' -%}
+                  </div>
+
+                  <div class="filter-content">
+                    <ul class="item-list list-per-page">
+                      <li class="radio-item">
+                        <input
+                          name="per_page"
+                          type="radio"
+                          id="mobile-per-page-0"
+                          value="{{ total }}"
+                          {% if items_per_page == total %}
+                            checked
+                          {% endif %}
+                        >
+                        <label for="mobile-per-page-0">
+                          {{- 'sections.collection_template.per_page_mobile' | t: number: total -}}
+                        </label>
+                      </li>
+
+                      {%- for i in (1..4) -%}
+                        {%- liquid
+                          assign times_col = section.settings.columns | times: 1 | times: i
+                          assign level = total | plus: times_col
+                        -%}
+
+                        <li class="radio-item">
+                          <input
+                            name="per_page"
+                            type="radio"
+                            id="mobile-per-page-{{ forloop.index }}"
+                            value="{{ level }}"
+                            {% if items_per_page == level %}
+                              checked
+                            {% endif %}
+                          >
+                          <label for="mobile-per-page-{{ forloop.index }}">
+                            {{- 'sections.collection_template.per_page_mobile' | t: number: level -}}
+                          </label>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="filter-item">
+                  <div class="filter-heading">
+                    <span class="heading-text">{{- 'sections.collection_template.sort_by_label' | t -}}</span>
+                    {%- render 'icon', code: 'chevron-right' -%}
+                  </div>
+
+                  <div class="filter-content">
+                    {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+
+                    <ul class="item-list">
+                      {%- for option in collection.sort_options -%}
+                        <li class="radio-item">
+                          <input
+                            type="radio"
+                            id="mobile-sort-by-{{ option.name | handle }}"
+                            name="sort_by"
+                            value="{{ option.value | escape }}"
+                            {% if option.value == sort_by %}
+                              checked
+                            {% endif %}
+                          >
+                          <label for="mobile-sort-by-{{ option.name | handle }}">{{- option.name | escape -}}</label>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-footer">
+              <a class="active-filter-item button secondary-button" href="/collections/all">
+                {{- 'sections.collection_template.clear' | t -}}
+              </a>
+              <button type="submit" class="button primary-button">
+                {{- 'sections.collection_template.apply' | t -}}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {% comment %} Content {% endcomment %}
+      <div class="content {% if section.settings.layout_sidebar == 'left' %}order-2{% elsif section.settings.layout_sidebar == 'right' %}order-1{% endif %}">
+        {% comment %} Banner {% endcomment %}
+        {%- if section.settings.banner != blank -%}
+          <div class="banner">
+            {%- if section.settings.banner_link != blank -%}
+              <a href="{{ section.settings.banner_link }}" class="banner-link"></a>
+            {%- endif -%}
+
+            {{- section.settings.banner | image_url: width: 1024 | image_tag: loading: 'lazy' -}}
+          </div>
+        {%- endif -%}
+
+        {%- if collection.products.size == 0 -%}
+          {% comment %} Empty product {% endcomment %}
+          <div class="toolbar">
+            <h5 class="product-count" role="status">
+              {{- 'sections.collection_template.empty' | t -}}
+            </h5>
+          </div>
+        {%- else -%}
+          {% comment %} Toolbar {% endcomment %}
+          <div class="toolbar">
+            {%- if section.settings.toolbar_title -%}
+              <h2 class="title text-{{ section.settings.title_align }}">
+                {%- liquid
+                  if collection.handle == 'all'
+                    echo 'sections.collection_template.title' | t
+                  else
+                    echo collection.title
+                  endif
+                -%}
+              </h2>
+            {%- endif -%}
+
+            {%- if section.settings.toolbar_count or section.settings.toolbar_view or section.settings.toolbar_sort -%}
+              <div class="toolbar-inner">
+                {%- if section.settings.toolbar_count -%}
+                  <span class="product-count">
+                    {%- liquid
+                      if paginate.pages > 1
+                        assign per_page = paginate.page_size
+                        assign current = per_page | times: paginate.current_page
+                        assign first = current | minus: per_page | plus: 1
+
+                        if paginate.items > current
+                          assign last = current
+                        else
+                          assign last = paginate.items
+                        endif
+
+                        assign first_last = first | append: '-' | append: last
+
+                        echo 'sections.collection_template.product_count_html' | t: product_count: first_last, count: collection.all_products_count
+                      else
+                        echo 'sections.collection_template.product_count_simple' | t: count: paginate.items
+                      endif
+                    -%}
+                  </span>
+                {%- endif -%}
+
+                {%- if section.settings.toolbar_view -%}
+                  <div class="toggle-dropdown per-page">
+                    <div class="dropdown-summary">
+                      {%- render 'icon', code: 'list' -%}
+                      {{- 'sections.collection_template.show' | t -}}
+
+                      <div class="dropdown-summary-inner">
+                        <span class="summary-info">{{- items_per_page -}}</span>
+                        <span class="dropdown-icon">{%- render 'icon', code: 'chevron-down' -%}</span>
+                      </div>
+                    </div>
+
+                    <ul class="dropdown-content" role="list">
+                      <li
+                        data-value="{{ total }}"
+                        {% if items_per_page == total %}
+                          data-current
+                        {% endif %}
+                      >
+                        {{- total -}}
+                      </li>
+
+                      {%- for i in (1..4) -%}
+                        {%- liquid
+                          assign times_col = section.settings.columns | times: 1 | times: i
+                          assign level = total | plus: times_col
+                        -%}
+
+                        <li
+                          data-value="{{ level }}"
+                          {% if items_per_page == level %}
+                            data-current
+                          {% endif %}
+                        >
+                          {{- level -}}
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </div>
+                {%- endif -%}
+
+                {%- if section.settings.toolbar_sort -%}
+                  {%- liquid
+                    assign collection_sort_by = collection.sort_by | default: collection.default_sort_by
+                    assign collection_sort_by_name = ''
+
+                    for option in collection.sort_options
+                      if option.value == collection_sort_by
+                        assign collection_sort_by_name = option.name
+                        break
+                      endif
+                    endfor
+                  -%}
+                  <div class="toggle-dropdown sort-by">
+                    <div class="dropdown-summary">
+                      {%- render 'icon', code: 'sort-by' -%}
+                      {{- 'sections.collection_template.sort_by_label' | t -}}
+
+                      <div class="dropdown-summary-inner">
+                        <span class="summary-info">{{ collection_sort_by_name }}</span>
+                        <span class="dropdown-icon">{%- render 'icon', code: 'chevron-down' -%}</span>
+                      </div>
+                    </div>
+
+                    <ul class="dropdown-content" role="list">
+                      {%- for option in collection.sort_options -%}
+                        <li
+                          data-value="{{ option.value | escape }}"
+                          {% if option.value == collection_sort_by %}
+                            data-current
+                          {% endif %}
+                        >
+                          {{ option.name | escape }}
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </div>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+          </div>
+
+          {% comment %} Products {% endcomment %}
+          <div class="products row">
+            {% if section.settings.style_product == 'style_gird' %}
+              <ul class="grid{% if section.settings.columns > 3 %} grid-small{% endif %} grid-{{ section.settings.columns }} grid-tablet-3 grid-mobile-2">
+                {%- for product in collection.products -%}
+                  <li class="grid-item">
+                    {%- render 'product-card', product: product -%}
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {% elsif section.settings.style_product == 'style_list' %}
+              <ul class="grid{% if section.settings.columns > 3 %} grid-small{% endif %} grid-{{ section.settings.columns }} grid-tablet-1 grid-mobile-1">
+                {%- for product in collection.products -%}
+                  <li class="grid-item">
+                    {%- render 'product-item-list-collection', product: product -%}
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {% endif %}
+
+            {% comment %} Pagination {% endcomment %}
+            {%- if paginate.pages > 1 -%}
+              {% render 'pagination', paginate: paginate, alignment: {{section.settings.text_align_pagination}} %}
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.enb_deals -%}
+          <div class="deals-of-the-day">
+            {%- if section.settings.title != blank or section.settings.button != blank -%}
+              <div class="title-wrapper{% if section.settings.button != blank %} text-left{% else %} text-center {% endif %}">
+                {% if section.settings.title != blank %}
+                  <h2 class="title heading-font-family">{{- section.settings.title | escape -}}</h2>
+                {% endif %}
+
+                {% if section.settings.button != blank %}
+                  <a href="{{ section.settings.url_button }}" class="button-section">
+                    {{ section.settings.button }}
+                    {%- render 'icon', code: 'chevron-right' -%}
+                  </a>
+                {% endif %}
+              </div>
+            {%- endif -%}
+
+            <ul class="grid grid-{{ section.settings.columns_deals }} grid-tablet-2 grid-mobile-1" role="list">
+              {% assign total_deals = section.settings.rows_deals | times: section.settings.columns_deals %}
+              {%- for product in product_list limit: total_deals -%}
+                <li class="grid-item">
+                  {%- liquid
+                    capture for_cycle
+                      case section.settings.columns_deals
+                        when 2
+                          cycle 1, 2
+                        when 3
+                          cycle 1, 2, 3
+                        when 4
+                          cycle 1, 2, 3, 4
+                        when 5
+                          cycle 1, 2, 3, 4, 5
+                        when 6
+                          cycle 1, 2, 3, 4, 5, 6
+                        when 7
+                          cycle 1, 2, 3, 4, 5, 6, 7
+                        when 8
+                          cycle 1, 2, 3, 4, 5, 6, 7, 8
+                        when 9
+                          cycle 1, 2, 3, 4, 5, 6, 7, 8, 9
+                        when 10
+                          cycle 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+                        when 11
+                          cycle 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+                        when 12
+                          cycle 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+                      endcase
+                    endcapture
+
+                    render 'product-card-item-v3', product: product, cycle: for_cycle
+                  -%}
+                </li>
+              {%- else -%}
+                {%- for i in (1..total_deals) -%}
+                  {%- liquid
+                    capture index
+                      cycle 1, 2, 3, 4, 5, 6
+                    endcapture
+                  -%}
+
+                  <li class="grid-item">
+                    {%- liquid
+                      render 'product-card-item-v3-placeholder', index: index
+                    -%}
+                  </li>
+                {%- endfor -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endpaginate -%}
+  </div>
+</div>
+
+{% schema %}
+{
+	"name": "t:sections.main-collection.name",
+	"class": "collection-page-section has-product-card",
+	"settings": [
+		{
+			"type": "header",
+			"content": "t:sections.main-collection.settings.header_0.content"
+		},
+		{
+			"type": "checkbox",
+			"id": "filter_top",
+			"default": true,
+			"label": "t:sections.main-collection.settings.filter_top.label",
+			"info": "t:sections.main-collection.settings.filter_top.info"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.main-collection.settings.header_1.content"
+		},
+		{
+			"type": "range",
+			"id": "width_sidebar",
+			"min": 10,
+			"max": 80,
+			"step": 1,
+			"default": 19,
+			"unit": "%",
+			"label": "t:sections.main-collection.settings.width.label"
+		},
+		{
+			"type": "range",
+			"id": "space_sidebar",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 30,
+			"unit": "px",
+			"label": "t:sections.main-collection.settings.space_sidebar.label",
+			"info": "t:sections.main-collection.settings.space_sidebar.info"
+		},
+		{
+			"type": "select",
+			"id": "layout_sidebar",
+			"options": [
+				{
+					"value": "left",
+					"label": "t:sections.main-collection.settings.layout_sidebar.options__1.label"
+				},
+				{
+					"value": "right",
+					"label": "t:sections.main-collection.settings.layout_sidebar.options__2.label"
+				},
+				{
+					"value": "no-sidebar",
+					"label": "t:sections.main-collection.settings.layout_sidebar.options__3.label"
+				}
+			],
+			"default": "left",
+			"label": "t:sections.main-collection.settings.layout_sidebar.label"
+		},
+		{
+			"type": "select",
+			"id": "style_product",
+			"options": [
+				{
+					"value": "style_gird",
+					"label": "t:sections.main-collection.settings.style_product.options__1.label"
+				},
+				{
+					"value": "style_list",
+					"label": "t:sections.main-collection.settings.style_product.options__2.label"
+				}
+			],
+			"default": "style_gird",
+			"label": "t:sections.main-collection.settings.style_product.label"
+		},
+		{
+			"type": "text",
+			"id": "title_quick_links",
+			"default":"Category" ,
+			"label": "t:sections.main-collection.settings.title_quick_links.label"
+		},
+		{
+			"type": "link_list",
+			"id": "quick_links",
+			"label": "t:sections.main-collection.settings.quick_links.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "filtering",
+			"default": true,
+			"label": "t:sections.main-collection.settings.filtering.label",
+			"info": "t:sections.main-collection.settings.filtering.info"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_count",
+			"default": true,
+			"label": "t:sections.main-collection.settings.show_count.label",
+			"info": "t:sections.main-collection.settings.show_count.info"
+		},
+		{
+			"type": "select",
+			"id": "filter_mode",
+			"options": [
+				{
+					"value": "closed",
+					"label": "t:sections.main-collection.settings.filter_mode.options__1.label"
+				},
+				{
+					"value": "open",
+					"label": "t:sections.main-collection.settings.filter_mode.options__2.label"
+				},
+				{
+					"value": "first",
+					"label": "t:sections.main-collection.settings.filter_mode.options__3.label"
+				}
+			],
+			"default": "first",
+			"label": "t:sections.main-collection.settings.filter_mode.label"
+		},
+		{
+			"type": "text",
+			"id": "title_product_sidebar",
+			"default":"New products" ,
+			"label": "t:sections.main-collection.settings.title_product_sidebar.label"
+		},
+		{
+			"type": "collection",
+			"id": "select_collection",
+			"label": "t:sections.main-collection.settings.select_collection.label"
+		},
+		{
+		    "type": "range",
+		    "id": "products_limit",
+		    "min": 1,
+		    "max": 20,
+		    "step": 1,
+		    "default": 3,
+		     "label": "t:sections.main-collection.settings.products_limit.label"
+	    },
+	    {
+			"type": "image_picker",
+			"id": "banner_sidebar",
+			"label": "t:sections.main-collection.settings.banner_sidebar.label"
+		},
+		{
+			"type": "text",
+			"id": "banner_sidebar_subtitle",
+			"default": "Organic",
+			"label": "t:sections.main-collection.settings.banner_sidebar_subtitle.label"
+		},
+		{
+			"type": "html",
+			"id": "banner_sidebar_title",
+			"default": "Save 17% <br>on <span>Oganic</span> <br>Juice",
+			"label": "t:sections.main-collection.settings.banner_sidebar_title.label"
+		},
+		{
+			"type": "url",
+			"id": "banner_sidebar_link",
+			"label": "t:sections.main-collection.settings.banner_sidebar_link.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.main-collection.settings.header_2.content"
+		},
+		{
+			"type": "image_picker",
+			"id": "banner",
+			"label": "t:sections.main-collection.settings.banner.label"
+		},
+		{
+			"type": "url",
+			"id": "banner_link",
+			"label": "t:sections.main-collection.settings.banner_link.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.main-collection.settings.header_title.content"
+		},
+		{
+			"type": "checkbox",
+			"id": "toolbar_title",
+			"default": false,
+			"label": "t:sections.main-collection.settings.toolbar_title.label"
+		},
+		{
+			"type": "color",
+			"id": "title_color",
+			"label": "t:sections.main-collection.settings.title_color.label"
+		},
+		{
+			"type": "range",
+			"id": "title_size",
+			"min": 10,
+			"max": 100,
+			"step": 1,
+			"default": 24,
+			"unit": "px",
+			"label": "t:sections.main-collection.settings.title_size.label"
+		},
+		{
+			"type": "select",
+			"id": "title_align",
+			"options": [
+				{
+					"value": "left",
+					"label": "t:sections.main-collection.settings.title_align.options__1.label"
+				},
+				{
+					"value": "center",
+					"label": "t:sections.main-collection.settings.title_align.options__2.label"
+				},
+				{
+					"value": "right",
+					"label": "t:sections.main-collection.settings.title_align.options__3.label"
+				}
+			],
+			"default": "left",
+			"label": "t:sections.main-collection.settings.title_align.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.main-collection.settings.header_3.content"
+		},
+		{
+			"type": "checkbox",
+			"id": "toolbar_count",
+			"default": true,
+			"label": "t:sections.main-collection.settings.toolbar_count.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "toolbar_view",
+			"default": true,
+			"label": "t:sections.main-collection.settings.toolbar_view.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "toolbar_sort",
+			"default": true,
+			"label": "t:sections.main-collection.settings.toolbar_sort.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.main-collection.settings.header_4.content"
+		},
+		{
+			"type": "select",
+			"id": "text_align",
+			"options": [
+				{
+					"value": "left",
+					"label": "t:sections.main-collection.settings.text_align.options__1.label"
+				},
+				{
+					"value": "center",
+					"label": "t:sections.main-collection.settings.text_align.options__2.label"
+				},
+				{
+					"value": "right",
+					"label": "t:sections.main-collection.settings.text_align.options__3.label"
+				}
+			],
+			"default": "left",
+			"label": "t:sections.main-collection.settings.text_align.label"
+		},
+		{
+			"type": "range",
+			"id": "columns",
+			"min": 1,
+			"max": 12,
+			"step": 1,
+			"default": 4,
+			"label": "t:sections.main-collection.settings.columns.label"
+		},
+		{
+			"type": "range",
+			"id": "rows",
+			"min": 1,
+			"max": 50,
+			"step": 1,
+			"default": 1,
+			"label": "t:sections.main-collection.settings.rows.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.main-collection.settings.header_pagination.content"
+		},
+		{
+			"type": "select",
+			"id": "text_align_pagination",
+			"options": [
+				{
+					"value": "left",
+					"label": "t:sections.main-collection.settings.text_align.options__1.label"
+				},
+				{
+					"value": "center",
+					"label": "t:sections.main-collection.settings.text_align.options__2.label"
+				},
+				{
+					"value": "right",
+					"label": "t:sections.main-collection.settings.text_align.options__3.label"
+				}
+			],
+			"default": "left",
+			"label": "t:sections.main-collection.settings.text_align.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.main-collection.settings.header_deals.content"
+		},
+		{
+			"type": "checkbox",
+			"id": "enb_deals",
+			"default": true,
+			"label": "t:sections.main-collection.settings.enb_deals.label"
+		},
+		{
+			"type": "text",
+			"id": "title",
+			"default": "Deals Of The Day",
+			"label": "t:sections.main-collection.settings.title.label"
+		},
+		{
+			"type": "text",
+			"id":"button",
+			"default": "All Deals",
+			"label": "t:sections.main-collection.settings.button.label"
+		},
+		{
+			"type": "url",
+			"id": "url_button",
+			"default": "/collections/all",
+			"label": "t:sections.main-collection.settings.url_button.label"
+		},
+		{
+			"type": "collection",
+			"id": "collection",
+			"label": "t:sections.main-collection.settings.collection.label"
+		},
+		{
+			"type": "range",
+			"id": "columns_deals",
+			"min": 1,
+			"max": 12,
+			"step": 1,
+			"default": 4,
+			"label": "t:sections.main-collection.settings.columns.label"
+		},
+		{
+			"type": "range",
+			"id": "rows_deals",
+			"min": 1,
+			"max": 10,
+			"step": 1,
+			"default": 1,
+			"label": "t:sections.main-collection.settings.rows.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.main-collection.settings.header_countdown.content"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_countdown",
+			"default": true,
+			"label": "t:sections.main-collection.settings.show_countdown.label"
+		}
+	]
+}
+{% endschema %}

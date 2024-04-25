@@ -1,0 +1,166 @@
+{%- liquid
+	assign total          = section.settings.rows | times: section.settings.columns
+	assign items_per_page = cart.attributes.collection_products_per_page | default: total
+-%}
+
+{{ 'search-page.css' | asset_url | stylesheet_tag }}
+
+<div class="container">
+	<div class="search-content{% if search.results_count == 0 %} search-empty{% endif %}">
+		<div class="search-header">
+			{%- if search.performed -%}
+				<h1 class="heading">{{- 'templates.search.title' | t -}}</h1>
+			{%- else -%}
+				<h1 class="heading">{{- 'general.search.label' | t -}}</h1>
+			{%- endif -%}
+
+			<form action="{{ routes.search_url }}" method="get" role="search" class="form">
+				<label class="field-label sr-only" for="search-in-template" aria-hidden="true">{{- 'general.search.label' | t -}}</label>
+				<input class="field-input" type="search" name="q" value="{{ search.terms | escape }}" placeholder="{{ 'general.search.typing' | t }}" id="search-in-template" {% if search.performed %}autofocus{% endif %}>
+				<input type="hidden" name="type" value="{{ settings.search_type }}">
+				<input name="options[prefix]" type="hidden" value="last">
+				<input type="hidden" name="options[unavailable_products]" value="{{ settings.search_unavailable_products }}">
+				
+				<button class="field-button" aria-label="{{ 'general.search.label' | t }}">
+					{%- render 'icon', code: 'search' -%}
+				</button>
+			</form>
+
+			{%- if search.performed -%}
+				<p class="search-result-info">
+					{%- if search.results_count == 0 -%}
+						{{- 'templates.search.no_results' | t: terms: search.terms -}}
+					{%- else -%}
+						{{- 'templates.search.results_with_count' | t: terms: search.terms, count: search.results_count -}}
+					{%- endif -%}
+				</p>
+			{%- endif -%}
+		</div>
+
+		{%- if search.performed and search.results.size > 0 -%}
+			{% paginate search.results by items_per_page %}
+				<div class="search-results">
+					<ul class="grid grid-{{ section.settings.columns }} grid-tablet-3 grid-mobile-2" role="list">
+						{%- for item in search.results -%}
+							<li class="grid-item">
+								<div class="card-item">
+									<a href="{{ item.url }}" class="card-link"><span class="sr-only">{{- 'accessibility.search_item_heading' | t -}}</span></a>
+
+									{%- case item.object_type -%}
+										{%- when 'product' -%}
+											<div class="card-media {{ section.settings.image_ratio }}-media">
+												{%- liquid
+													if item.featured_media
+														echo item.featured_media | image_url: width: 450 | image_tag: alt: item.featured_media.alt, class: 'media', loading: 'lazy'
+													else
+														render 'icon', code: 'placeholder'
+													endif
+												-%}
+
+												{% comment %} Badge {% endcomment %}
+												{%- capture product_badge -%}
+													{%- if item.available == false -%}
+														<span class="badge sold-out" aria-hidden="true">{{- 'products.product.sold_out' | t -}}</span>
+													{%- elsif item.compare_at_price > item.price and item.available -%}
+														<span class="badge on-sale" aria-hidden="true">
+															<span class="sr-only">{{ 'products.product.on_sale' | t }}: </span>
+															{%- if item.compare_at_price_max > item.price -%}
+															-{{ item.compare_at_price_max | minus: item.price | times: 100.0 | divided_by: item.compare_at_price_max | round }}%
+															{%- endif -%}
+														</span>
+													{%- endif -%}
+												{%- endcapture -%}
+
+												{%- liquid
+													if product_badge != blank
+														echo product_badge
+													endif
+												-%}
+											</div>
+
+											<div class="card-content">
+												<h2 class="title">{{- item.title | truncate: 50 | escape -}}</h2>
+												{%- render 'price', product: item -%}
+											</div>
+										{%- when 'article' -%}
+											<div class="card-media {{ section.settings.image_ratio }}-media">
+												{%- if item.image -%}
+													<img class="media"
+														loading="lazy"
+														src="{{ item.image.src | image_url: width: 450 }}"
+														width="{{ item.image.src.width }}"
+														height="{{ item.image.src.height }}"
+														alt="{{ item.image.src.alt | escape }}">
+												{%- else -%}
+													{%- render 'icon', code: 'placeholder' -%}
+												{%- endif -%}
+
+												<span class="badge">{{- 'blogs.article.blog' | t -}}</span>
+											</div>
+
+											<div class="card-content">
+												<h2 class="title">{{- item.title | truncate: 50 | escape -}}</h2>
+												<span class="date">{{- item.published_at | time_tag: format: 'short_month_day_year' -}}</span>
+											</div>
+									{%- endcase -%}
+								</div>
+							</li>
+						{%- endfor -%}
+					</ul>
+
+					{%- if paginate.pages > 1 -%}
+						{%- render 'pagination', paginate: paginate, alignment: 'center' -%}
+					{%- endif -%}
+				</div>
+			{% endpaginate %}
+		{%- endif -%}
+	</div>
+</div>
+
+{% schema %}
+{
+	"name": "t:sections.main-search.name",
+	"tag": "section",
+	"class": "search-page-section",
+	"settings": [
+		{
+			"type": "select",
+			"id": "image_ratio",
+			"options": [
+				{
+					"value": "adapt",
+					"label": "t:sections.main-search.settings.image_ratio.options__1.label"
+				},
+				{
+					"value": "portrait",
+					"label": "t:sections.main-search.settings.image_ratio.options__2.label"
+				},
+				{
+					"value": "square",
+					"label": "t:sections.main-search.settings.image_ratio.options__3.label"
+				}
+			],
+			"default": "square",
+			"label": "t:sections.main-search.settings.image_ratio.label"
+		},
+		{
+			"type": "range",
+			"id": "columns",
+			"default": 4,
+			"min": 1,
+			"max": 12,
+			"step": 1,
+			"label": "t:sections.main-search.settings.columns.label"
+		},
+		{
+			"type": "range",
+			"id": "rows",
+			"default": 4,
+			"min": 1,
+			"max": 10,
+			"step": 1,
+			"label": "t:sections.main-search.settings.rows.label"
+		}
+	]
+}
+{% endschema %}

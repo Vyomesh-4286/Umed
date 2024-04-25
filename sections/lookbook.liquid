@@ -1,0 +1,206 @@
+{%- liquid
+	assign section_id = '#shopify-section-' | append: section.id
+	assign full       = section.settings.full
+-%}
+
+<style>
+	{{ section_id }} {
+		padding-top: {{ section.settings.padding_top_mobile }}px;
+		padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+	}
+
+	@media (min-width: 768px) {
+		{{ section_id }} {
+			padding-top: {{ section.settings.padding_top }}px;
+			padding-bottom: {{ section.settings.padding_bottom }}px;
+		}
+	}
+</style>
+
+<div class="{% if full %}stretch-section{% else %}container{% endif %}">
+	<div class="lookbook">
+		{%- if section.settings.image != blank -%}
+			{{ section.settings.image | image_url: width: section.settings.image.width, height: section.settings.height | image_tag: loading: 'lazy' }}
+		{%- else -%}
+			{{- 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg' -}}
+		{%- endif -%}
+
+		{%- for block in section.blocks -%}
+			{%- case block.type -%}
+				{%- when 'product' -%}
+					{%- liquid
+						assign product = block.settings.product
+
+						capture product_title
+							if product != blank
+								echo product.title | escape
+							else
+								echo 'onboarding.products.title' | t
+							endif
+						endcapture
+					-%}
+
+					<div class="item" data-id="{{ block.id }}" style="--item-color: {{ block.settings.color | color_extract: 'red' }}, {{ block.settings.color | color_extract: 'green' }}, {{ block.settings.color | color_extract: 'blue' }}; --item-x: {{ block.settings.horizontal }}%; --item-y: {{ block.settings.vertical }}%;" {{ block.shopify_attributes }}>
+
+						{%- if block.settings.quick_view -%}
+							<a class="product-quick-view" href="{{ product.url | split: '?' | first }}" data-handle="{{ product.handle }}">
+								<span class="sr-only">{{- product_title -}}</span>
+							</a>
+						{%- endif -%}
+
+						<div class="item-summary">
+							<div class="product-image">
+								{%- if product.featured_media -%}
+									<img srcset="{{ product.featured_media | image_url: width: 200 }} 1x, {{ product.featured_media | image_url: width: 400 }} 2x"
+										src="{{ product.featured_media | image_url: width: 200 }}"
+										alt="{{ product.featured_media.alt | escape }}"
+										loading="lazy"
+										width="70"
+										height="70">
+								{%- else -%}
+									{%- render 'icon', code: 'placeholder' -%}
+								{%- endif -%}
+							</div>
+
+							<div class="summary-inner">
+								<h5 class="product-title">{{- product_title -}}</h5>
+
+								{%- render 'price', product: product, use_variant: true -%}
+							</div>
+						</div>
+					</div>
+			{%- endcase -%}
+		{%- endfor -%}
+	</div>
+</div>
+
+{% schema %}
+{
+	"name": "t:sections.lookbook.name",
+	"tag": "section",
+	"class": "lookbook-section",
+	"settings": [
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "t:sections.lookbook.settings.image.label"
+		},
+		{
+			"type": "checkbox",
+			"id": "full",
+			"default": true,
+			"label": "t:sections.lookbook.settings.full.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"blocks": [
+		{
+			"type": "product",
+			"name": "t:sections.lookbook.blocks.product.name",
+			"settings": [
+				{
+					"type": "product",
+					"id": "product",
+					"label": "t:sections.lookbook.blocks.product.settings.product.label"
+				},
+				{
+					"type": "checkbox",
+					"id": "quick_view",
+					"default": true,
+					"label": "t:sections.lookbook.blocks.product.settings.quick_view.label"
+				},
+				{
+					"type": "header",
+					"content": "t:sections.lookbook.blocks.product.settings.header_1.content"
+				},
+				{
+					"type": "color",
+					"id": "color",
+					"default": "#ffffff",
+					"label": "t:sections.lookbook.blocks.product.settings.color.label"
+				},
+				{
+					"type": "range",
+					"id": "horizontal",
+					"min": 5,
+					"max": 95,
+					"step": 1,
+					"default": 30,
+					"unit": "%",
+					"label": "t:sections.lookbook.blocks.product.settings.horizontal.label"
+				},
+				{
+					"type": "range",
+					"id": "vertical",
+					"min": 5,
+					"max": 95,
+					"step": 1,
+					"default": 50,
+					"unit": "%",
+					"label": "t:sections.lookbook.blocks.product.settings.vertical.label"
+				}
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.lookbook.presets.name",
+			"blocks": [
+				{
+					"type": "product"
+				},
+				{
+					"type": "product"
+				}
+			]
+		}
+	]
+}
+{% endschema %}

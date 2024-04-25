@@ -1,0 +1,248 @@
+{% comment %} {{ 'discount-code.css' | asset_url | stylesheet_tag }} {% endcomment %}
+
+{% assign total_price = cart.total_price | money_without_currency %}
+{% assign total_price = total_price | remove: ',' %}
+{% assign total_price = total_price | plus: 0 %}
+{% assign total_price = cart.total_price | money_without_currency %}
+{% assign total_price = total_price | remove: ',' %}
+{% assign total_price = total_price | plus: 0 %}
+
+{% assign discount_rate_10 = '0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80' | split: ', ' %}
+{% assign setting_value_for_discount = settings.discount_off_second | times: 1 %}
+
+{% if setting_value_for_discount == 100 %}
+  {% assign discount_rate = discount_rate_10[0] | times: 1.0 %}
+{% elsif setting_value_for_discount == 200 %}
+  {% assign discount_rate = discount_rate_10[1] | times: 1.0 %}
+{% elsif setting_value_for_discount == 300 %}
+  {% assign discount_rate = discount_rate_10[2] | times: 1.0 %}
+{% elsif setting_value_for_discount == 400 %}
+  {% assign discount_rate = discount_rate_10[3] | times: 1.0 %}
+{% elsif setting_value_for_discount == 500 %}
+  {% assign discount_rate = discount_rate_10[4] | times: 1.0 %}
+{% elsif setting_value_for_discount == 600 %}
+  {% assign discount_rate = discount_rate_10[5] | times: 1.0 %}
+{% elsif setting_value_for_discount == 700 %}
+  {% assign discount_rate = discount_rate_10[6] | times: 1.0 %}
+{% elsif setting_value_for_discount == 800 %}
+  {% assign discount_rate = discount_rate_10[7] | times: 1.0 %}
+{% else %}
+  {% assign discount_rate = 0.0 %}
+{% endif %}
+
+{% if discount_rate > 0 %}
+  {% assign discount_amount = product.price | times: discount_rate %}
+  {% assign discounted_price = product.price | minus: discount_amount %}
+  {% assign discount_percentage = discount_rate | times: 100 | round %}
+{% else %}
+  {% assign discounted_price = product.price %}
+{% endif %}
+{%- capture discountCode -%}
+  {% if setting_value_for_discount != blank %}
+<div class="discount-code-snippet" id="product-discount">
+  <div class="">
+    <div class="discount-code-main slider-wrapper swiper" data-slider-options='{ "speed": 1000, "slidesPerView": 1, "loop": true, "autoplay": { "delay": 2500, "disableOnInteraction": true }, "pagination": { "el": ".swiper-pagination"}}'>
+      {% if settings.title != blank %}
+        <div class="offer-title">
+          <h2>{{ settings.title }}</h2>
+        </div>
+      {% endif %}
+
+      <div class="discount-code-desc-main offer_slider swiper-wrapper">
+        
+        {%- for index in (1..6) -%}
+          {%- assign discount_desc = 'discoun_code_desc' | append: index -%}
+          {%- assign discount_code = 'discount_code' | append: index -%}
+          {%- assign discount_price = 'discount_price' | append: index -%}
+          {%- assign discount_code_subtext = 'discount_code_subtext' | append: index -%}
+          {%- assign new_price = settings[discount_price] | plus: 0 -%}
+
+          {% if settings[discount_desc] != blank %}
+            <div class="discount-code-desc-svg-main swiper-slide">
+              <div class="discount-code-desc-svg">
+              </div>
+              <div class="discount-code-desc-inner">
+                {% if settings[discount_desc] != blank %}
+                  <div class="discount-code-desc sale-price-discount">
+                    {{ settings[discount_desc] }}
+                    <div class="discount-success-msg {% if total_price <= new_price %}error-animation{% endif %}">
+                      {% if new_price > 0 %}
+                        {% if total_price <= new_price %}
+                          {% assign remainAmount = new_price | minus: total_price | times: 100 %}
+                          To activate this offer, add <strong>{{ remainAmount | money }}</strong> more to your cart.
+                        {% else %}
+                          Tap to apply code
+                        {% endif %}
+                      {% else %}
+                        {{ settings[discount_code_subtext] }}
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="discount_mes--wapper">
+                  <div class="discount_mes">
+                  <label class="switch">
+                    <input id="discountToggle" type="checkbox">
+                    <span class="slider"></span>
+                  </label>
+                {% endif %}
+                {% if settings[discount_code] != blank %}
+                  <div class="success-msg-main">
+                    <div data-discount-price="{{ new_price }}" class="discount-code sale-price-discount {% unless total_price >= new_price %} disabled{% endunless %}" data-id-price="{{ discounted_price | money }}" data-variant-id="{{ product.selected_or_first_available_variant.id }}" data-prodcut-id="{{ product.id }}">
+                      <span class="before-apply"></span>
+                    </div>
+                    <div class="codecopy-loader" style="display: none;">
+                    </div>
+                  </div>
+                {% endif %}
+                  </div>
+                  <div class="success-msg-main">
+                    <div data-discount-price="" class="discount-code sale-price-discount {% unless total_price >= new_price %} disabled{% endunless %}" data-id="{{ discount_percentage }}">
+                      <div class="discount-description">
+                      <span class="before-apply"> {{ settings.discount_description }} {{ discount_percentage}} % {{ 'products.product.off' | t }}</span>
+                      </div>  
+                </div>
+              </div>
+            </div>
+            </div>
+          {% endif %}
+        {%- endfor -%}
+        
+      </div>
+      <div class="swiper-pagination"></div>
+    </div>
+  </div>
+</div>
+    {% endif %}
+{%- endcapture -%}
+
+{%- if template.name == 'product' or template.name == 'cart' -%}
+  <style>
+    .offers-tab .offer-title h2 { display: none; }
+  </style>
+  <div class="cust-accordion offers-tab">
+    <div class="acco-content active">
+      {{ discountCode }}
+    </div>
+  </div>
+{%- else -%}
+  {{ discountCode }}
+{%- endif -%}
+
+<style>
+    .price-card--price-number:before {
+    content: "$";
+    font-size: 2rem;
+    display: inline-block;
+    position: relative;
+  }
+
+  .price-card--price-number:after {
+    content: "/ mo";
+    font-size: 1.3rem;
+    display: inline-block;
+  }
+
+  .sale-price-discount {
+    text-align: center;
+    opacity: 0.4;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0 1rem;
+  }
+
+  .sale-price-discount .before-apply {
+    color: #3498db;
+    font-style: italic;
+    padding-left: 0.5rem;
+  }
+
+  .discount-code--mobile {
+    color: #3498db;
+    font-style: italic;
+    display: none;
+  }
+
+  .sale-price-discount.active {
+    opacity: 1;
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 3.75rem;
+    height: 2.15rem;
+    vertical-align: -50%;
+    margin: 0;
+  }
+
+  .switch input {
+    display: none;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: -12px;
+    left: -6px;
+    right: -15px;
+    bottom: 0;
+    background-color: #3498db;
+    border-radius: 34px;
+    -webkit-transition: 0.1s;
+    transition: 0.1s;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    border-radius: 50%;
+    -webkit-transition: 0.1s;
+    transition: 0.1s;
+  }
+
+  #product-discount input:focus + .slider {
+    box-shadow: 0 0 1px #2196f3;
+  }
+
+  #product-discount input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+</style>
+<script>
+  (function () {
+    const toggleSwitch = document.getElementById("discountToggle");
+    const discountCodes = document.querySelectorAll('.discount-code');
+    const discountTexts = document.querySelectorAll('.discount-code-desc');
+
+    toggleSwitch.addEventListener("change", function () {
+      if (toggleSwitch.checked) {
+        discountCodes.forEach(function (code) {
+          code.classList.add("active"); // Enable the discount code
+          const newCode = code.querySelector(".before-apply");
+          if (newCode !== null) {
+            const discountCodeText = newCode.textContent.trim(); // Get the discount code text
+            // Do something with the discount code text, e.g., display it somewhere
+          }
+        });
+        discountTexts.forEach(function (text) {
+          text.classList.add("active");
+        });
+      } else {
+        discountCodes.forEach(function (code) {
+          code.classList.remove("active"); // Disable the discount code
+          // You may want to remove the copied discount code or hide it
+        });
+        discountTexts.forEach(function (text) {
+          text.classList.remove("active"); // Disable the discount text
+        });
+      }
+    });
+  })();
+</script>

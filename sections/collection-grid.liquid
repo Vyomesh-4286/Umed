@@ -1,0 +1,276 @@
+{%- liquid
+	assign section_id = '#shopify-section-' | append: section.id
+	assign src_tag    = 'src'
+
+	if settings.image_animation
+		assign src_tag = 'data-src'
+	endif
+-%}
+
+<style>
+	{{ section_id }} {
+		padding-top: {{ section.settings.padding_top_mobile }}px;
+		padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+	}
+
+	{{ section_id }} .collection-grid-title {
+		font-size: {{ section.settings.title_size | times: 0.9 }}px;
+	}
+
+	{{ section_id }} .collection-heading {
+		font-size: {{ section.settings.collection_title_size | times: 0.9 }}px;
+	}
+
+	@media (min-width: 768px) {
+		{{ section_id }} {
+			padding-top: {{ section.settings.padding_top }}px;
+			padding-bottom: {{ section.settings.padding_bottom }}px;
+		}
+
+		{{ section_id }} .collection-grid-title {
+			font-size: {{ section.settings.title_size }}px;
+		}
+
+		{{ section_id }} .collection-heading {
+			font-size: {{ section.settings.collection_title_size }}px;
+		}
+	}
+</style>
+
+<div class="container">
+	{%- if section.settings.title != blank or section.settings.view_all != blank -%}
+		<div class="title-wrapper">
+			<h2 class="collection-grid-title text-center">{{- section.settings.title | escape -}}</h2>
+
+			{%- if section.settings.view_all != blank -%}
+				<a href="{{ routes.collections_url }}" class="view-all-button">
+					{{- section.settings.view_all -}}
+				</a>
+			{%- endif -%}
+		</div>
+	{%- endif -%}
+
+	<ul class="grid grid-{{ section.settings.columns }} grid-tablet-2 grid-mobile-1" role="list">
+		{%- for block in section.blocks -%}
+			<li class="grid-item" {{ block.shopify_attributes }}>
+				<div class="card-item">
+					{%- case block.type -%}
+						{%- when '@app' -%}
+							{%- render block -%}
+						{%- when 'collection' -%}
+							{%- liquid
+								capture heading
+									if block.settings.collection.title != blank
+										echo block.settings.collection.title | escape
+									else
+										echo 'onboarding.collections.title' | t
+									endif
+								endcapture
+							-%}
+
+							<a href="{{ block.settings.collection.url }}" class="card-link"><span class="sr-only">{{- heading -}}</span></a>
+
+							<div class="card-media">
+								<div class="card-media-inner {{ section.settings.image_ratio }}-media">
+									{%- assign collection_image = block.settings.collection.featured_image -%}
+
+									{%- if collection_image != blank -%}
+										<img {% if settings.image_animation %}class="lazy-image" data-delay="{{ forloop.index | times: 0.15 }}s"{% endif %}
+											{{ src_tag }}="{{ collection_image | image_url: width: 768 }}"
+											alt="{{ collection_image.alt | escape }}"
+											loading="lazy"
+											width="{{ collection_image.width }}"
+											height="{{ collection_image.height }}">
+									{%- else -%}
+										{%- render 'icon', code: 'placeholder' -%}
+									{%- endif -%}
+								</div>
+							</div>
+
+							<div class="card-text">
+								<h3 class="collection-heading">{{- heading -}}</h3>
+
+								<span class="collection-item">
+									{{- 'onboarding.collections.item' | t: count: collections[block.settings.collection.handle].all_products_count -}}
+								</span>
+							</div>
+					{%- endcase -%}
+				</div>
+			</li>
+		{%- else -%}
+			{%- for i in (1..3) -%}
+				<li class="grid-item">
+					<div class="card-item">
+						<div class="card-media">
+							<div class="card-media-inner">
+								{%- render 'icon', code: 'placeholder' -%}
+							</div>
+						</div>
+
+						<div class="card-text">
+							<h3 class="collection-heading">
+								{{- 'onboarding.collections.title' | t -}}
+							</h3>
+
+							<span class="collection-item">
+								{{- 'onboarding.collections.item' | t: count: 20 -}}
+							</span>
+						</div>
+					</div>
+				</li>
+			{%- endfor -%}
+		{%- endfor -%}
+	</ul>
+</div>
+
+{% schema %}
+{
+	"name": "t:sections.collection-grid.name",
+	"tag": "section",
+	"class": "collection-grid-section",
+	"settings": [
+		{
+			"type": "text",
+			"id": "title",
+			"label": "t:sections.collection-grid.settings.title.label"
+		},
+		{
+			"type": "range",
+			"id": "title_size",
+			"min": 8,
+			"max": 100,
+			"default": 20,
+			"unit": "px",
+			"label": "t:sections.collection-grid.settings.title_size.label"
+		},
+		{
+			"type": "text",
+			"id": "view_all",
+			"label": "t:sections.collection-grid.settings.view_all.label"
+		},
+		{
+			"type": "select",
+			"id": "image_ratio",
+			"options": [
+				{
+					"value": "adapt",
+					"label": "t:sections.collection-grid.settings.image_ratio.options__1.label"
+				},
+				{
+					"value": "portrait",
+					"label": "t:sections.collection-grid.settings.image_ratio.options__2.label"
+				},
+				{
+					"value": "square",
+					"label": "t:sections.collection-grid.settings.image_ratio.options__3.label"
+				}
+			],
+			"default": "portrait",
+			"label": "t:sections.collection-grid.settings.image_ratio.label",
+			"info": "t:sections.collection-grid.settings.image_ratio.info"
+		},
+		{
+			"type": "range",
+			"id": "columns",
+			"min": 2,
+			"max": 10,
+			"step": 1,
+			"default": 3,
+			"label": "t:sections.collection-grid.settings.columns.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.collection-grid.settings.header_collections.content"
+		},
+		{
+			"type": "range",
+			"id": "collection_title_size",
+			"min": 8,
+			"max": 100,
+			"default": 20,
+			"unit": "px",
+			"label": "t:sections.collection-grid.settings.collection_title_size.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "collection",
+			"name": "t:sections.collection-grid.blocks.collection.name",
+			"settings": [
+				{
+					"type": "collection",
+					"id": "collection",
+					"label": "t:sections.collection-grid.blocks.collection.settings.collection.label"
+				}
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.collection-grid.presets.name",
+			"blocks": [
+				{
+					"type": "collection"
+				},
+				{
+					"type": "collection"
+				},
+				{
+					"type": "collection"
+				}
+			]
+		}
+	]
+}
+{% endschema %}

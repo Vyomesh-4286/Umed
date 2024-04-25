@@ -1,0 +1,84 @@
+.search-page-section .search-content {
+  padding: 4rem 0 8rem 0;
+}
+@media (min-width: 992px) {
+  .search-page-section .search-content.search-empty {
+    padding: 20rem 0 25rem 0;
+  }
+}
+.search-page-section .search-header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+.search-page-section .search-header .heading {
+  font-size: 2.4rem;
+}
+.search-page-section .search-header .form {
+  display: inline-flex;
+  margin-bottom: 3rem;
+  width: 100%;
+  max-width: 47.8rem;
+  height: 4.5rem;
+  font-size: 1.6rem;
+  box-shadow: 0 0 0 0.1rem rgba(18, 18, 18, 0.55);
+  transition: box-shadow 0.2s ease;
+}
+.search-page-section .search-header .form:focus-within {
+  box-shadow: 0 0 0 0.2rem rgba(18, 18, 18, 0.75);
+}
+.search-page-section .search-header .field-input {
+  border: 0;
+  flex-grow: 1;
+  padding-right: 0;
+}
+.search-page-section .search-header .field-button {
+  width: 4.5rem;
+  background-color: transparent;
+  border: 0;
+  color: rgb(var(--text-color));
+}
+.search-page-section .search-results .card-item {
+  position: relative;
+  margin-bottom: 3rem;
+}
+@media (hover: hover) {
+  .search-page-section .search-results .card-item:hover .card-media {
+    opacity: 0.8;
+  }
+}
+.search-page-section .search-results .card-media {
+  position: relative;
+  transition: opacity 0.2s ease;
+}
+.search-page-section .search-results .badge {
+  position: absolute;
+  left: 1.5rem;
+  bottom: 1.5rem;
+  color: #fff;
+  border-radius: 0.3rem;
+  padding: 0.5rem 0.7rem;
+  font-size: 80%;
+  line-height: 1;
+  background-color: rgb(var(--heading-color));
+}
+.search-page-section .search-results .badge.on-sale {
+  background-color: rgb(var(--sale-label-color));
+}
+.search-page-section .search-results .badge.sold-out {
+  background-color: rgb(var(--out-stock-color));
+}
+.search-page-section .search-results .card-link {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+}
+.search-page-section .search-results .title {
+  font-size: 1.3rem;
+  margin-bottom: 0.7rem;
+}
+.search-page-section .pagination {
+  margin-top: 4rem;
+}

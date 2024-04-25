@@ -1,0 +1,81 @@
+{% comment %}
+		Renders a product thumbnail with a modal-opener
+
+		Accepts:
+		- media: {Object} Product Media object
+		- image_only: Get media image only, not include template like Play, modal
+		- position: {String} Position of the media. Used for accessible label
+		- loop: {Boolean} Enable video looping (optional)
+		- modal_id: {String} The product modal that will be shown by clicking the thumbnail
+		- role: {String} Detect product 'main' or 'thumbnail'
+{% endcomment %}
+
+{% if role == 'main' %}
+	<div class="media-preview-wrap" data-id="{{ media.id }}" data-pos="{{ position }}"
+
+		{% if media %}
+			{% if media.media_type == 'image' %}
+				data-dimension="{{ media.width | append: 'x' | append: media.height }}"
+				data-key="{{ media | handle | append: '-master' }}"
+
+				{% if section.settings.zoom or section.settings.lightbox %}
+					data-zoom="{{ media | image_url: width: 1500 }}"
+				{% endif %}
+			{% endif %}
+			data-{{ media.media_type | escape }}
+		{% endif %}>
+
+		{% if media %}
+			<img class="media-preview" src="{{ media | image_url: width: 1000 }}" loading="lazy" width="740" height="740" alt="{{ media.preview_image.alt | escape }}">
+
+			{%- unless image_only -%}
+				{%- if media.media_type != 'image' -%}
+					<span class="view-media">
+						{%- if media.media_type == 'model' -%}
+							<span class="sr-only">{{- 'products.product.media.play_model' | t -}}</span>
+							{%- render 'icon', code: '3d-model' -%}
+						{%- else -%}
+							<span class="sr-only">{{- 'products.product.media.play_video' | t -}}</span>
+							{%- render 'icon', code: 'play' -%}
+						{%- endif -%}
+					</span>
+
+					<template>
+						{%- liquid
+							case media.media_type
+							when 'external_video'
+								assign video_class = 'js-' | append: media.host
+								if media.host == 'youtube'
+									echo media | external_video_url: autoplay: true, loop: loop, playlist: media.external_id | external_video_tag: class: video_class, loading: 'lazy'
+								else
+									echo media | external_video_url: autoplay: true, loop: loop | external_video_tag: class: video_class, loading: 'lazy'
+								endif
+							when 'video'
+								echo media | video_tag: image_size: '2048x', autoplay: true, loop: loop, controls: true, preload: 'none'
+							when 'model'
+								echo media | model_viewer_tag
+							endcase
+						-%}
+					</template>
+				{%- elsif section.settings.lightbox -%}
+					<span class="open-media-fullscreen">
+						<span class="sr-only">{{- 'products.product.media.open_media' | t: index: position -}}</span>
+						{%- render 'icon', code: 'arrows-fullscreen' -%}
+					</span>
+				{%- endif -%}
+			{%- endunless -%}
+		{% else %}
+			{{- 'product-1' | placeholder_svg_tag: 'placeholder-svg' -}}
+		{% endif %}
+	</div>
+{% elsif media %}
+	<div class="media-preview-wrap" data-type="{{ media.media_type | escape }}">
+		{%- if media.media_type == 'video' or media.media_type == 'external_video' -%}
+			<span class="thumb-view">{%- render 'icon', code: 'play' -%}</span>
+		{%- elsif media.media_type == 'model' -%}
+			<span class="thumb-view">{%- render 'icon', code: '3d-model' -%}</span>
+		{%- endif -%}
+
+		<img class="media-preview" src="{{ media | image_url: width: 300, height: 300, crop: 'center' }}" loading="lazy" width="150" height="150" alt="{{- media.preview_image.alt | escape -}}">
+	</div>
+{% endif %}

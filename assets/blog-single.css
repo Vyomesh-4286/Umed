@@ -1,0 +1,71 @@
+.blog-post-section .image {
+  width: 100%;
+  object-fit: cover;
+}
+.blog-post-section .article-content {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  max-width: 100%;
+  margin: 0 auto 10rem auto;
+}
+@media (max-width: 991px) {
+  .blog-post-section .article-content {
+    margin: 0 auto 5rem auto;
+  }
+}
+.blog-post-section .title {
+  text-align: center;
+  margin: 0;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.blog-post-section .post-meta {
+  text-align: center;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.blog-post-section .post-meta:empty {
+  display: none;
+}
+.blog-post-section .post-meta .meta-item:first-child:before {
+  content: none;
+}
+.blog-post-section .post-meta .meta-item:before {
+  content: ".";
+  margin: 0 0.7rem;
+  vertical-align: 0.3rem;
+}
+.blog-post-section .post-meta .author-name {
+  margin-left: 0.3rem;
+}
+.blog-post-section .post-content {
+  line-height: 1.9;
+}
+.blog-post-section .comment-list .comment-heading {
+  font-size: 2rem;
+  margin-top: 6rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 3rem;
+}
+.blog-post-section .comment-list .article-comment {
+  margin-top: 2.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 2.2rem;
+}
+.blog-post-section .comment-list .comment-content {
+  margin-bottom: 1.8rem;
+}
+.blog-post-section .comment-list .separator {
+  margin: 0 0.3rem;
+}
+.blog-post-section .comment-form-heading {
+  font-size: 2rem;
+  margin-top: 7rem;
+  margin-bottom: 3rem;
+}
+@media (max-width: 991px) {
+  .blog-post-section .comment-form-heading {
+    margin-top: 3rem;
+    margin-bottom: 2rem;
+  }
+}

@@ -1,0 +1,454 @@
+{%- liquid
+  assign section_id = '#shopify-section-' | append: section.id
+  assign show_title = section.settings.show_title
+  assign text_color = section.settings.text_color
+  assign full = section.settings.full
+  assign svg_color = text_color | replace: '#', '%23'
+  assign bg_svg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' fill='" | append: svg_color | append: "' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E"
+-%}
+
+<style>
+  {{ section_id }} .box-breadcrumb {
+  	padding-top: {{ section.settings.padding_top_mobile }}px;
+  	padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+  	margin-top: {{ section.settings.margin_top_mobile }}px;
+  	margin-bottom: {{ section.settings.margin_bottom_mobile }}px;
+  	border-radius: {{ section.settings.border_adius_bg }}px;
+
+  	{%- if section.settings.background != blank -%}
+  		background-color: {{ section.settings.background }};
+  	{%- endif -%}
+
+  	{%- if section.settings.background_image != blank -%}
+  		background-image: url({{ section.settings.background_image | image_url: width: 1920 }});
+  		background-repeat: no-repeat;
+  		background-size: cover;
+  		background-position: center;
+  	{%- endif -%}
+
+  	{%- if full -%}
+  		padding-left: 1.5rem;
+  		padding-right: 1.5rem;
+  	{%- endif -%}
+  }
+
+  {%- if text_color != blank -%}
+  	{{ section_id }} .breadcrumb-list li a {
+  		color: {{ text_color }};
+  	}
+
+  	{{ section_id }} .breadcrumb-list li:not(:last-child) {
+  		background-image: url("{{ bg_svg }}");
+  	}
+
+  {%- endif -%}
+
+  {% if section.settings.color_title != blank %}
+  	{{ section_id }} .page-title{
+  		color: {{ section.settings.color_title }};
+  	}
+  {%- endif -%}
+
+  {% if section.settings.color_home != blank %}
+  	{{ section_id }} li.link_homepage a{
+  		color: {{ section.settings.color_home }};
+  	}
+  {%- endif -%}
+
+  {{ section_id }} .box-breadcrumb {
+  	align-items: {{ section.settings.alignment }};
+  }
+
+  {%- if show_title -%}
+  	{{ section_id }} .page-title {
+  		font-size: {{ section.settings.title_size }}px;
+  		margin-bottom: {{ section.settings.title_space }}px;
+  	}
+  {%- endif -%}
+
+  @media (min-width: 768px) {
+  	{{ section_id }} .box-breadcrumb {
+  		padding-top: {{ section.settings.padding_top }}px;
+  		padding-bottom: {{ section.settings.padding_bottom }}px;
+  		margin-top: {{ section.settings.margin_top }}px;
+  		margin-bottom: {{ section.settings.margin_bottom }}px;
+  	}
+  }
+</style>
+
+{%- unless template == 'index' or template == '404' -%}
+  {%- assign t = template | split: '.' | first -%}
+
+  <div class="{% if full %}stretch-section{% else %}container{% endif %}">
+    <div class="box-breadcrumb {% if section.settings.enb_cate %}has-list-cate{% endif %}">
+      <div class="breadcrumb">
+        {%- if show_title -%}
+          <h2 class="page-title heading-font-family">{{- page_title -}}</h2>
+        {%- endif -%}
+
+        <nav class="breadcrumb-inner" aria-label="breadcrumb">
+          <ul class="breadcrumb-list">
+            <li class="link_homepage">
+              <a href="/">
+                {%- render 'icon', code: 'home' -%}
+                {{- 'general.text.home' | t -}}
+              </a>
+            </li>
+
+            {%- case t -%}
+              {%- when 'page' -%}
+                <li aria-current="page">
+                  {{- page.title -}}
+                </li>
+              {%- when 'product' -%}
+                {%- assign collect = product.collections.first -%}
+
+                {%- if collect -%}
+                  <li>
+                    {{- collect.title | link_to: collect.url -}}
+                  </li>
+                {%- endif -%}
+
+                <li aria-current="page">
+                  {{- product.title -}}
+                </li>
+                {% comment %}
+                  {%- when 'collection' and collection.handle -%}
+                    {%- if current_tags -%}
+                      <li>
+                        {{- collection.title | link_to: collection.url -}}
+                      </li>
+
+                      <li>
+                        {%- capture tag_url -%}{{ collection.url }}/{{ current_tags | join: '+' }}{%- endcapture -%}
+                        <a href="{{ tag_url }}" aria-current="page">{{- current_tags | join: ' + ' -}}</a>
+                      </li>
+                    {%- else -%}
+                      <li>
+                        <a href="/collections" aria-current="page">{{- 'sections.collection_list.collection' | t -}}</a>
+                      </li>
+
+                      <li aria-current="page">
+                        {{- collection.title -}}
+                      </li>
+                    {%- endif -%}
+                {% endcomment %}
+              {%- when 'cart' -%}
+                <li aria-current="page">
+                  {{- 'templates.cart.cart' | t -}}
+                </li>
+              {%- when 'blog' -%}
+                {%- if current_tags -%}
+                  <li>
+                    {{- blog.title | link_to: blog.url -}}
+                  </li>
+
+                  <li aria-current="page">
+                    {%- capture tag_url -%}{{ blog.url }}/tagged/{{ current_tags | join: '+' }}{%- endcapture -%}
+                    {{- current_tags | join: ' + ' -}}
+                  </li>
+                {%- else -%}
+                  <li aria-current="page">
+                    {{- blog.title -}}
+                  </li>
+                {%- endif -%}
+              {%- when 'article' -%}
+                <li>
+                  {{- blog.title | link_to: blog.url -}}
+                </li>
+
+                <li aria-current="page">
+                  {{- article.title -}}
+                </li>
+              {%- else -%}
+                <li aria-current="page">
+                  {{- page_title -}}
+                </li>
+            {%- endcase -%}
+          </ul>
+        </nav>
+      </div>
+      {% if section.settings.image_firs or section.settings.image_second or section.settings.image_third != blank %}
+        <div class="chooise-images">
+          {% if section.settings.image_first != blank %}
+            <div class="breadcrumb-image">
+              <img
+                src="{{ section.settings.image_first | img_url: 'master' }}"
+                alt="{{ page_title.alt | escape }}"
+                loading="lazy"
+              >
+            </div>
+          {% endif %}
+          {% if section.settings.image_second != blank %}
+            <div class="breadcrumb-image">
+              <img
+                src="{{ section.settings.image_second | img_url: 'master' }}"
+                alt="{{ page_title.alt | escape }}"
+                loading="lazy"
+              >
+            </div>
+          {% endif %}
+          {% if section.settings.image_third != blank %}
+            <div class="breadcrumb-image">
+              <img
+                src="{{ section.settings.image_third | img_url: 'master' }}"
+                alt="{{ page_title.alt | escape }}"
+                loading="lazy"
+              >
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+      {%- if section.settings.enb_cate -%}
+        <div class="list-cate">
+          <ul>
+            {%- for link in section.settings.menu_cate.links -%}
+              <li class="link hover-animated {% if link.active %}active{% endif %}">
+                <a href="{{ link.url }}" class="heading-font-family nav-link">
+                  {%- render 'icon', code: 'close-thin' -%}
+                  {{ link.title }}
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endunless -%}
+
+{% schema %}
+{
+	"name": "t:sections.breadcrumb.name",
+	"tag": "section",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "full",
+			"default": false,
+			"label": "t:sections.breadcrumb.settings.full.label"
+		},
+		{
+			"type": "color",
+			"id": "background",
+			"default": "#ffffff",
+			"label": "t:sections.breadcrumb.settings.background.label"
+		},
+		{
+			"type": "range",
+			"id": "border_adius_bg",
+			"min": 10,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:sections.breadcrumb.settings.border_adius_bg.label"
+		},
+		{
+			"type": "color",
+			"id": "color_title",
+			"default": "#253D4E",
+			"label": "t:sections.breadcrumb.settings.color_title.label"
+		},
+		{
+			"type": "color",
+			"id": "color_home",
+			"default": "#3BB77E",
+			"label": "t:sections.breadcrumb.settings.color_home.label"
+		},
+		{
+			"type": "color",
+			"id": "text_color",
+			"default": "#7E7E7E",
+			"label": "t:sections.breadcrumb.settings.text_color.label"
+		},
+       {
+			"type": "image_picker",
+			"id": "image_first",
+			"label": "Images First"
+		},
+       {
+			"type": "image_picker",
+			"id": "image_second",
+			"label": "Images Second"
+		},
+        {
+			"type": "image_picker",
+			"id": "image_third",
+			"label": "Images Third"
+		},
+		{
+			"type": "image_picker",
+			"id": "background_image",
+			"label": "t:sections.breadcrumb.settings.background_image.label"
+		},
+		{
+			"type": "select",
+			"id": "alignment",
+			"default": "flex-start",
+			"options": [
+				{
+					"value": "flex-start",
+					"label": "t:sections.breadcrumb.settings.alignment.option_1.label"
+				},
+				{
+					"value": "center",
+					"label": "t:sections.breadcrumb.settings.alignment.option_2.label"
+				},
+				{
+					"value": "flex-end",
+					"label": "t:sections.breadcrumb.settings.alignment.option_3.label"
+				}
+			],
+			"label": "t:sections.breadcrumb.settings.alignment.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.breadcrumb.settings.header_title.content"
+		},
+		{
+			"type": "checkbox",
+			"id": "show_title",
+			"default": false,
+			"label": "t:sections.breadcrumb.settings.show_title.label"
+		},
+		{
+			"type": "range",
+			"id": "title_size",
+			"min": 10,
+			"max": 100,
+			"step": 1,
+			"default": 48,
+			"unit": "px",
+			"label": "t:sections.breadcrumb.settings.title_size.label"
+		},
+		{
+			"type": "range",
+			"id": "title_space",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:sections.breadcrumb.settings.title_space.label"
+		},
+		{
+			"type": "header",
+			"content": "t:sections.breadcrumb.settings.header_cate.content"
+		},
+		{
+			"type": "checkbox",
+			"id": "enb_cate",
+			"default": true,
+			"label": "t:sections.breadcrumb.settings.enb_cate.label"
+		},
+		{
+			"type": "link_list",
+			"id": "menu_cate",
+			"label": "t:sections.breadcrumb.settings.menu_cate.label",
+			"info": "t:sections.breadcrumb.settings.menu_cate.info"
+		},
+		{
+			"type": "header",
+			"content": "t:general.margin.header_margin.content"
+		},
+		{
+			"type": "range",
+			"id": "margin_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 0,
+			"unit": "px",
+			"label": "t:general.margin.margin_top.label"
+		},
+		{
+			"type": "range",
+			"id": "margin_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 0,
+			"unit": "px",
+			"label": "t:general.margin.margin_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.margin.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "margin_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 0,
+			"unit": "px",
+			"label": "t:general.margin.margin_top.label"
+		},
+		{
+			"type": "range",
+			"id": "margin_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 0,
+			"unit": "px",
+			"label": "t:general.margin.margin_bottom.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 15,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 15,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.breadcrumb.presets.name"
+		}
+	]
+}
+{% endschema %}

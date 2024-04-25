@@ -1,0 +1,57 @@
+{% comment %}
+		Renders a list of product's price (regular, sale)
+
+		Accepts:
+		- product: {Object} Product Liquid object (optional)
+		- use_variant: {Boolean} Renders selected or first variant price instead of overall product pricing (optional)
+		- price_class: {String} Adds a price class to the price element (optional)
+
+		Usage:
+		{% render 'price', product: product %}
+{% endcomment %}
+{%- liquid
+	if use_variant
+		assign target = product.selected_or_first_available_variant
+	else
+		assign target = product
+	endif
+
+	assign price          = target.price | default: 1095
+	assign original_price = target.compare_at_price
+-%}
+
+{%- capture price_html -%}
+	{%- if original_price -%}
+		<span class="price">
+			<span class="sr-only">{{- 'products.product.price.sale_price' | t -}} </span>
+			{%- render 'get-price', price: price -%}
+		</span>
+		<s class="regular-price">
+			<span class="sr-only">{{- 'products.product.price.regular_price' | t -}} </span>
+			{%- render 'get-price', price: original_price -%}
+		</s>		
+	{%- else -%}
+		<span class="price">
+			<span class="sr-only">{{- 'products.product.price.regular_price' | t -}} </span>
+			{%- render 'get-price', price: price -%}
+		</span>
+	{%- endif -%}
+{%- endcapture -%}
+
+<div class="product-price{% if price_class %} {{ price_class }}{% endif %}">
+	{%- if use_variant or product.type != 'variable' -%}
+		{{- price_html -}}
+	{%- else -%}
+		<span class="price">
+			{%- render 'get-price', price: target.price_min -%}
+		</span>
+
+		<span class="separator">-</span>
+
+		<span class="price">
+			{%- render 'get-price', price: target.price_max -%}
+		</span>
+	{%- endif -%}
+
+	{%- render 'price-unit', product: product -%}
+</div>

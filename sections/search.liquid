@@ -1,0 +1,92 @@
+<div class="fetch-search">
+	{%- if search.results_count > 0 -%}
+		{%- if search.types contains 'product' -%}
+			<div class="result-content grid grid-3 grid-tablet-2 grid-mobile-2">
+				{%- assign highlight = search.terms | split: ' AND ' | last | remove_first: '*' -%}
+
+				{%- for item in search.results limit: 3 -%}
+					<div class="result-item grid-item">
+						{%- case item.object_type -%}
+							{%- when 'product' -%}
+								<a href="{{ item.url }}" class="card-media square-media">
+									{%- liquid
+										if item.featured_image
+											echo item.featured_image | image_url: width: 400, height: 400 | image_tag: alt: item.featured_image.alt, loading: 'lazy'
+										else
+											render 'icon', code: 'placeholder'
+										endif
+									-%}
+
+									{% comment %} Badge {% endcomment %}
+									{%- capture product_badge -%}
+										{%- if item.available == false -%}
+											<span class="badge sold-out" aria-hidden="true">{{- 'products.product.sold_out' | t -}}</span>
+										{%- elsif item.compare_at_price > item.price and item.available -%}
+											<span class="badge on-sale" aria-hidden="true">
+												<span class="sr-only">{{ 'products.product.on_sale' | t }}: </span>
+												{%- if item.compare_at_price_max > item.price -%}
+												-{{ item.compare_at_price_max | minus: item.price | times: 100.0 | divided_by: item.compare_at_price_max | round }}%
+												{%- endif -%}
+											</span>
+										{%- endif -%}
+									{%- endcapture -%}
+
+									{%- liquid
+										if product_badge != blank
+											echo product_badge
+										endif
+									-%}
+								</a>
+
+								<div class="card-content">
+									<h2 class="title">
+										<a href="{{ item.url }}">{{ item.title | highlight: highlight }}</a>
+									</h2>
+
+									<span class="product-price">
+										{%- render 'price', product: item -%}
+									</span>
+								</div>
+							{%- when 'article' -%}
+								<a href="{{ item.url }}" class="card-media square-media">
+									{%- liquid
+										if item.image
+											echo item.image.src | image_url: width: 400, height: 400 | image_tag: alt: item.image.src.alt, loading: 'lazy'
+										else
+											render 'icon', code: 'placeholder'
+										endif
+									-%}
+
+									<span class="badge">{{- 'blogs.article.blog' | t -}}</span>
+								</a>
+
+								<div class="card-content">
+									<h2 class="title">
+										<a href="{{ item.url }}">{{- item.title | truncate: 50 | escape -}}</a>
+									</h2>
+
+									<span class="date">{{- item.published_at | time_tag: format: 'short_month_day_year' -}}</span>
+								</div>
+						{%- endcase -%}
+					</div>
+				{%- endfor -%}
+			</div>
+
+			{%- if search.results_count > 3 -%}
+				<button class="button results-button" type="submit">
+					{{- 'general.search.view_all_results' | t -}}
+				</button>
+			{%- endif -%}
+		{%- else -%}
+			<ul class="search-bar__result-linklist list--unstyled" role="list">
+				{%- for item in search.results limit: 3 -%}
+					<li>
+						<a href="{{ item.url }}" class="search-bar">{{ item.title }}</a>
+					</li>
+				{%- endfor -%}
+			</ul>
+		{%- endif -%}
+	{%- else -%}
+		<p class="no-results">{{ 'general.search.no_results' | t }}</p>
+	{%- endif -%}
+</div>

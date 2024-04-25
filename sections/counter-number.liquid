@@ -1,0 +1,230 @@
+{%- liquid
+	assign section_id = '#shopify-section-' | append: section.id
+	assign full       = section.settings.full
+-%}
+
+<div class="section-counter-number">
+	<div class="{% if full %}stretch-section{% else %}container{% endif %}">
+		<div class="counter-number text-{{ section.settings.align }} grid grid-{{ section.settings.col_destop }} grid-tablet-2 grid-mobile-1" role="list">
+			{%- for block in section.blocks -%}
+				<div class="grid-item" data-{{ block.id }} {{ block.shopify_attributes }}>
+					<div class="counter-item">
+						{%- case block.type -%}
+							{%- when '@app' -%}
+								{%- render block -%}
+							{%- when 'content' -%}
+							
+									{% if block.settings.number != blank %}
+										<h1 class="number-count">
+											<span class="number" data-number="{{ block.settings.number }}">0</span>+</h1>
+									{% endif %}
+								
+
+								{% if block.settings.subtext != blank %}
+									<p class="sub-text">{{ block.settings.subtext }}</p>
+								{% endif %}
+
+						{%- endcase -%}
+					</div>
+				</div>
+			{%- endfor -%}
+		</div>
+	</div>
+</div>
+
+
+<style>
+	{{ section_id }} {
+		padding-top: {{ section.settings.padding_top_mobile }}px;
+		padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+	}
+
+	{%- if section.settings.bg_image != blank -%}
+
+	{{ section_id }} .counter-number {
+		background-image: url({{ section.settings.bg_image | image_url: width: 1920 }});
+		background-position: center;
+		background-repeat: no-repeat;
+	}
+	{%- endif -%}
+
+	{{ section_id }} .counter-item {
+		color: {{ section.settings.color_text }};	
+	}
+
+	@media (min-width: 768px) {
+		{{ section_id }} {
+			padding-top: {{ section.settings.padding_top }}px;
+			padding-bottom: {{ section.settings.padding_bottom }}px;
+		}
+	}
+
+	{%- for block in section.blocks -%}
+
+	{%- case block.type -%}
+		{%- when 'content' -%}
+			{{ section_id }} [data-{{ block.id }}] .counter-item .number-count {
+				font-size: {{ block.settings.size_number }}px;
+			}
+
+			{{ section_id }} [data-{{ block.id }}] .counter-item .sub-text {
+				font-size: {{ block.settings.subtext_size }}px;
+			}
+			{%- endcase -%}
+	{%- endfor -%}
+
+</style>
+
+{% schema %}
+{
+	"name": "t:sections.counter-number.name",
+	"class": "counter-number-section",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "full",
+			"default": false,
+			"label": "t:general.layout.full.label"
+		},
+		{
+			"type": "image_picker",
+			"id": "bg_image",
+			"label": "t:sections.counter-number.settings.bg_image.label"
+		},
+		{
+			"type": "select",
+			"id": "align",
+			"options": [
+				{
+					"value": "Left",
+					"label": "t:sections.counter-number.settings.align.options__1.label"
+				},
+				{
+					"value": "center",
+					"label": "t:sections.counter-number.settings.align.options__2.label"
+				},
+				{
+					"value": "right",
+					"label": "t:sections.counter-number.settings.align.options__3.label"
+				}
+			],
+			"default": "center",
+			"label": "t:sections.counter-number.settings.align.label"
+		},
+		{
+			"type": "range",
+			"id": "col_destop",
+			"label": "t:sections.counter-number.settings.col_destop.label",
+			"min": 1,
+			"max": 6,
+			"step": 1,
+			"default": 5
+		},
+		{
+			"type": "color",
+			"id": "color_text",
+			"default": "#fff",
+			"label": "t:sections.counter-number.settings.color_text.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"blocks": [
+		{
+			"type": "@app"
+		},
+		{
+			"type": "content",
+			"name": "t:sections.counter-number.blocks.content.name",
+			"settings": [
+				{
+					"type": "number",
+					"id": "number",
+					"default": 12,
+					"label": "t:sections.counter-number.blocks.content.settings.number.label"
+				},
+				{
+					"type": "range",
+					"id": "size_number",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 72,
+					"label": "t:sections.counter-number.blocks.content.settings.size_number.label"
+				},
+				{
+					"type": "text",
+					"id": "subtext",
+					"default": "Happy Customers",
+					"label": "t:sections.counter-number.blocks.content.settings.subtext.label"
+				},
+				{
+					"type": "range",
+					"id": "subtext_size",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 24,
+					"label": "t:sections.counter-number.blocks.content.settings.subtext_size.label"
+				}
+			]
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.counter-number.presets.name",
+			"blocks": [
+				{
+					"type": "content"
+				}
+			]
+		}
+	]
+}
+{% endschema %}

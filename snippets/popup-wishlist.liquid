@@ -1,0 +1,62 @@
+<div class="wishlist-box">
+  <div class="wishlist-inner">
+    <div class="wishlist-content"></div>
+    <button class="view-modal share-my-wishlist" id="share-wishlist-button"><span>Share</span><i class="fa-solid fa-share-nodes"></i></button>
+  </div>
+  <div class="popup">
+    <div class="content">
+      <div class="close">x</div>
+      <p>Share this link via</p>
+      <ul class="icons">
+        <a href="https://www.facebook.com" target="_blank"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+        <a href="https://www.instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+        <a href="https://web.whatsapp.com" target="_blank"><i class="fab fa-whatsapp"></i></a>
+        <a href="https://telegram.me" target="_blank"><i class="fab fa-telegram-plane"></i></a>
+      </ul>
+      <p>Or copy link</p>
+      <div class="field">
+        <i class="url-icon uil uil-link"></i>
+        <input type="text" readonly value="https://umed-mart-development.myshopify.com/pages/my-wishlist">
+        <button>Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const viewBtn = document.querySelector(".view-modal");
+      const popup = document.querySelector(".popup");
+      if (popup) {
+          const close = popup.querySelector(".close");
+          const field = popup.querySelector(".field");
+          const input = field.querySelector("input");
+          const copy = field.querySelector("button");
+
+          viewBtn.onclick = () => {
+              popup.classList.toggle("show");
+          };
+
+          if (close) {
+              close.onclick = () => {
+                  viewBtn.click();
+              };
+          }
+          if (copy) {
+              copy.onclick = () => {
+                  input.select(); //select input value
+                  if (document.execCommand("copy")) { //if the selected text is copied
+                      field.classList.add("active");
+                      copy.innerText = "Copied";
+                      setTimeout(() => {
+                          window.getSelection().removeAllRanges(); //remove selection from page
+                          field.classList.remove("active");
+                          copy.innerText = "Copy";
+                      }, 3000);
+                  }
+              };
+          }
+      }
+  });
+</script>

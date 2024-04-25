@@ -1,0 +1,28 @@
+<div class="dialog-search">
+	<form action="{{ routes.search_url }}" method="get" role="search" class="dialog-search-form">
+		<div class="container">
+			<div class="dialog-search-inner">
+				<p class="search-heading">{{- 'general.search.heading' | t -}}</p>
+
+				<div class="search-field">
+					<input class="search-input"
+						type="search"
+						name="q"
+						value="{{ search.terms | escape }}"
+						placeholder="{{ 'general.search.typing' | t }}"
+						required
+						data-noui>
+
+					<label class="sr-only">{{- 'general.search.label' | t -}}</label>
+					<input type="hidden" name="options[prefix]" value="last">
+
+					<button class="search-button" aria-label="{{ 'general.search.label' | t }}">
+						{%- render 'icon', code: 'search' -%}
+					</button>
+				</div>
+
+				<div class="sarch-results"></div>
+			</div>
+		</div>
+	</form>
+</div>

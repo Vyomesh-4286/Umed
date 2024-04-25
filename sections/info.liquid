@@ -1,0 +1,381 @@
+{%- liquid
+	assign section_id = '#shopify-section-' | append: section.id
+	assign full       = section.settings.full
+	assign padding    = section.settings.padding-content
+	assign src_tag    = 'src'
+
+	if settings.image_animation
+		assign src_tag = 'data-src'
+	endif
+-%}
+
+
+<div class="section-info">
+	<div class="{% if full %}stretch-section{% else %}container{% endif %}">
+		{% unless full %}
+			<div class="col-xl-10 col-lg-12 m-auto">
+		{% endunless %}
+			{% if section.settings.img_top != blank or section.settings.svg_top != blank or section.settings.title_section != blank or section.settings.subtitle != blank %}
+				<div class="section-top text-{{ section.settings.align }}">
+					{% if section.settings.img_top != blank or section.settings.svg_top != blank %}
+						<div class="icon">
+							{% if section.settings.img_top != blank %}
+								{{ section.settings.img_top | image_url: width: 50 | image_tag: loading: 'lazy' }}
+							{% elsif section.settings.svg_top != blank %}							
+								<div class="iconsvg">
+									{{ section.settings.svg_top }}
+								</div>
+							{% endif %}
+						</div>
+					{%- endif -%}
+				</div>
+			{% endif %}
+
+			<div class="info-box layout-{{ section.settings.layout_section }} grid grid-2 grid-tablet-2 grid-mobile-1">
+				<div class="info-item grid-item">
+					{%- assign img_section = section.settings.img_section -%}
+
+					{%- if img_section != blank -%}
+						<img {% if settings.image_animation %}class="lazy-image"{% endif %}
+							{{ src_tag }}="{{ img_section | image_url: width: 700 }}"
+							alt="{{ img_section.alt | escape }}"
+							loading="lazy"
+							width="{{ img_section.width }}"
+							height="{{ img_section.height }}">
+					{%- else -%}
+						{%- render 'icon', code: 'placeholder' -%}
+					{%- endif -%}
+				</div>
+				<div class="info-item grid-item content-info">
+					{%- unless padding -%}<div class="content-padding">{%- endunless -%}
+						{%- for block in section.blocks -%}
+							<div class="item-block" data-{{ block.id }} {{ block.shopify_attributes }}>
+								{%- case block.type -%}
+									{%- when '@app' -%}
+										{%- render block -%}
+
+									{%- when 'sub-title' -%}
+										<h4 class="sub-title">{{ block.settings.sub-title }}</h4>
+
+									{%- when 'title-block' -%}
+										<h2 class="title">{{ block.settings.title }}</h2>
+
+									{%- when 'description' -%}
+										<p class="description">{{ block.settings.description }}</p>
+
+								{%- endcase -%}
+							</div>
+						{%- endfor -%}
+					{%- unless padding -%}</div>{%- endunless -%}
+				</div>
+			</div>
+		{% unless full %}
+			</div>
+	{% endunless %}
+	</div>
+</div>
+
+
+<style>
+	{{ section_id }} .section-info {
+		padding-top: {{ section.settings.padding_top_mobile }}px;
+		margin-top: {{ section.settings.margin_top_mobile }}px;
+		padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+		margin-bottom: {{ section.settings.margin_bottom_mobile }}px;
+
+		{% if section.settings.bg_section != blank %}
+			background-color: {{ section.settings.bg_section }};
+		{% endif %}
+	}
+
+	@media (min-width: 768px) {
+		{{ section_id }} .section-info {
+			padding-top: {{ section.settings.padding_top }}px;
+			margin-top: {{ section.settings.margin_top }}px;
+			padding-bottom: {{ section.settings.padding_bottom }}px;
+			margin-bottom: {{ section.settings.margin_bottom }}px;
+		}
+
+		{{ section_id }} .title-section {
+			font-size: {{ section.settings.size_title }}px;
+		}
+	}
+
+	{{ section_id }} .title-section {
+		font-size: {{ section.settings.size_title | times: 1 }}px;
+	}
+
+	{{ section_id }} .info-item img{
+		width: {{ section.settings.width_img_section | times: 1 }}px;
+	}
+
+	{% if section.settings.color_text != blank %}
+		{{ section_id }} .title-section,
+		{{ section_id }} .subtitle-section{
+			color: {{ section.settings.color_text }};
+		}
+	{% endif %}
+
+	{%- for block in section.blocks -%}
+		{%- case block.type -%}
+			{%- when 'sub-title' -%}
+				{{ section_id }} [data-{{ block.id }}] .sub-title {
+					{%- if block.settings.size-sub-title > 0 -%}
+						font-size: {{ block.settings.size-sub-title }}px;
+					{%- endif -%}
+
+					{% if block.settings.color-sub-title != blank %}
+						color: {{ block.settings.color-sub-title }};
+					{%- endif -%}
+				}
+			{%- when 'title-block' -%}
+				{{ section_id }} [data-{{ block.id }}] .title {
+					{%- if block.settings.size-title > 0 -%}
+						font-size: {{ block.settings.size-title }}px;
+					{%- endif -%}
+				}
+			{%- when 'description' -%}
+				{{ section_id }} [data-{{ block.id }}] .description {
+					{%- if block.settings.size-description > 0 -%}
+						font-size: {{ block.settings.size-description }}px;
+					{%- endif -%}
+			}
+
+		{%- endcase -%}
+	{%- endfor -%}
+</style>
+
+{{ 'fancybox.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'fancybox.umd.js' | asset_url }}" defer="defer"></script>
+
+{% schema %}
+{
+	"name": "t:sections.info.name",
+	"tag": "section",
+	"class": "info-section",
+	"settings": [
+		{
+			"type": "checkbox",
+			"id": "full",
+			"default": false,
+			"label": "t:sections.info.settings.full.label"
+		},
+		{
+			"type": "color",
+			"id": "bg_section",
+			"label": "t:sections.info.settings.bg_section.label"
+		},
+		{
+			"type": "select",
+			"id": "layout_section",
+			"options": [
+				{
+					"value": "imgleft",
+					"label": "t:sections.info.settings.layout_section.img_left.label"
+				},
+				{
+					"value": "imgright",
+					"label": "t:sections.info.settings.layout_section.img_right.label"
+				}
+			],
+			"default": "imgleft",
+			"label": "t:sections.info.settings.layout_section.label"
+		},
+		{
+			"type":"image_picker",
+			"id":"img_section",
+			"label": "t:sections.info.settings.img_section.label"
+		},
+		{
+			"type": "range",
+			"id": "width_img_section",
+			"min": 0,
+			"max": 1000,
+			"step": 10,
+			"default":700,
+			"unit": "px",
+			"label": "t:sections.info.settings.width_img_section.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.margin.header_margin.content"
+		},
+		{
+			"type": "range",
+			"id": "margin_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.margin.margin_top.label"
+		},
+		{
+			"type": "range",
+			"id": "margin_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.margin.margin_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.margin.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "margin_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.margin.margin_top.label"
+		},
+		{
+			"type": "range",
+			"id": "margin_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.margin.margin_bottom.label"
+		},
+		{
+			"type": "header",
+			"content": "t:general.padding.header_padding.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 50,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		},
+		{
+			"type": "paragraph",
+			"content": "t:general.padding.paragraph_mobile.content"
+		},
+		{
+			"type": "range",
+			"id": "padding_top_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_top.label"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom_mobile",
+			"min": 0,
+			"max": 100,
+			"step": 1,
+			"default": 20,
+			"unit": "px",
+			"label": "t:general.padding.padding_bottom.label"
+		}
+	],
+	"blocks": [
+		{
+			"type": "sub-title",
+			"name": "t:sections.info.blocks.sub-title.name",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "textarea",
+					"id": "sub-title",
+					"default": "Our performance",
+					"label": "t:sections.info.blocks.sub-title.settings.sub-title.label"
+				},
+				{
+					"type": "range",
+					"id": "size-sub-title",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"default": 24,
+					"label": "t:sections.info.blocks.sub-title.settings.size-sub-title.label"
+				}
+			]
+		},
+		{
+			"type": "title-block",
+			"name": "t:sections.info.blocks.title-block.name",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "textarea",
+					"id": "title",
+					"default": "Welcome to Umed",
+					"label": "t:sections.info.blocks.title-block.settings.title.label"
+				},
+				{
+					"type": "range",
+					"id": "size-title",
+					"min": 10,
+					"max": 100,
+					"step": 1,
+					"default": 40,
+					"label": "t:sections.info.blocks.title-block.settings.size-title.label"
+				}
+			]
+		},
+		{
+			"type": "description",
+			"name": "t:sections.info.blocks.description.name",
+			"limit": 1,
+			"settings": [
+				{
+					"type": "textarea",
+					"id": "description",
+					"default": "Our Story",
+					"label": "t:sections.info.blocks.description.settings.description.label"
+				},
+				{
+					"type": "range",
+					"id": "size-description",
+					"min": 10,
+					"max": 40,
+					"step": 1,
+					"default": 16,
+					"label": "t:sections.info.blocks.description.settings.size-description.label"
+				}
+			]
+		},
+		{
+			"type": "@app"
+		}
+	],
+	"presets": [
+		{
+			"name": "t:sections.info.presets.name",
+			"blocks": [
+				{
+					"type": "title-block"
+				},
+				{
+					"type": "description"
+				}				
+			]
+		}
+	]
+}
+{% endschema %}
